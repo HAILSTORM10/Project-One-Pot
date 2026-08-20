@@ -4,12 +4,18 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, jpeg;
+  Dialogs, ExtCtrls, jpeg, pngimage, StdCtrls;
 
 type
   TfrmWelcome = class(TForm)
-    Image1: TImage;
+    imgBackdrop: TImage;
+    lblHeader: TLabel;
+    lblSubHeader: TLabel;
+    lblTagline: TLabel;
+    Label3: TLabel;
+    Button1: TButton;
     procedure Image1Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -24,7 +30,7 @@ var
   frmWelcome: TfrmWelcome;
 
 implementation
-uses P1SDK; // Project One SDK, Linked to frmDevKit
+uses P1SDK, frmLogIn_U; // Project One SDK, Linked to frmDevKit
 {$R *.dfm}
 
 { TfrmWelcome }
@@ -34,10 +40,18 @@ uses P1SDK; // Project One SDK, Linked to frmDevKit
 //
 //end;
 
+procedure TfrmWelcome.Button1Click(Sender: TObject);
+begin
+
+frmLogIn.show;
+frmWelcome.Hide;
+
+end;
+
 procedure TfrmWelcome.Image1Click(Sender: TObject);
 begin
 
-frmDevKit.SizePicture(Image1, 5, 1);
+//frmDevKit.SizePicture(Image1, 5, 1);
 
 end;
 

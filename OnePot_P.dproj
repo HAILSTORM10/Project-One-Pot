@@ -52,6 +52,12 @@
 			<DCCReference Include="P1SDK.pas">
 				<Form>frmDevKit</Form>
 			</DCCReference>
+			<DCCReference Include="Dash_U.pas">
+				<Form>frmMain</Form>
+			</DCCReference>
+			<DCCReference Include="SignUp_U.pas">
+				<Form>frmSignUp</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
