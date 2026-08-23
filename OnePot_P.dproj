@@ -58,6 +58,10 @@
 			<DCCReference Include="SignUp_U.pas">
 				<Form>frmSignUp</Form>
 			</DCCReference>
+			<DCCReference Include="dmOnePot_U.pas">
+				<Form>dmOnePot</Form>
+				<DesignClass>TDataModule</DesignClass>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

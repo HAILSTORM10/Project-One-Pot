@@ -16,19 +16,26 @@ object frmDevKit: TfrmDevKit
   object tmr60FPS: TTimer
     Enabled = False
     Interval = 17
-    Left = 32
+    Left = 464
     Top = 16
   end
   object tmrDuration: TTimer
     Enabled = False
-    Left = 248
-    Top = 120
+    Left = 320
+    Top = 16
   end
   object tmrSizePicture: TTimer
     Enabled = False
     Interval = 17
     OnTimer = tmrSizePictureTimer
-    Left = 360
-    Top = 104
+    Left = 392
+    Top = 16
+  end
+  object tmrSlide: TTimer
+    Enabled = False
+    Interval = 17
+    OnTimer = tmrSlideTimer
+    Left = 16
+    Top = 40
   end
 end

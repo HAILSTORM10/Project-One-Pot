@@ -57,16 +57,16 @@ begin
   AssignFile(tUsrDat, 'UserData.txt');
   Reset(tUsrDat);
 
-  while Not Eof(tUsrDat) OR (sUser <> edtUser.Text) do
-  begin
-
+  repeat
     ReadLn(tUsrDat, sLine);
-    sUser := Copy(sLine, 1, POS('#', sLine) - 1);
-    Delete(sLine, 1, POS('#', sLine));
-    sPass := Copy(sLine, 1, POS('#', sLine) - 1);
-    Delete(sLine, 1, POS('#', sLine));
+    sUser := Copy(sLine, 1, POS('~#', sLine) - 1);
+    Delete(sLine, 1, POS('~#', sLine) + 1);
+    sPass := Copy(sLine, 1, POS('~#', sLine) - 1);
+    Delete(sLine, 1, POS('~#', sLine) + 1);
     sUID := sLine;
-  end;
+
+//    Showmessage(sUser + sPass + sUID);
+  until EOF(tUsrDat) OR (sUser = edtUser.Text);
 
   if sUser <> edtUser.Text then
   begin

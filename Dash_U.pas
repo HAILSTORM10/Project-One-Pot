@@ -4,11 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, pngimage, ExtCtrls;
+  Dialogs, pngimage, ExtCtrls, ComCtrls, StdCtrls;
 
 type
   TfrmMain = class(TForm)
-    imgBackdrop: TImage;
+    pnlCustomers: TPanel;
+    imgCustomerBG: TImage;
+    btnReservations: TButton;
   private
     { Private declarations }
   public
