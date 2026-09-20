@@ -14,7 +14,8 @@ type
     lblTagline: TLabel;
     Label3: TLabel;
     Button1: TButton;
-    procedure Image1Click(Sender: TObject);
+    imgExit: TImage;
+    procedure imgExitClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
@@ -54,10 +55,10 @@ begin
   tblEmps := dmOnePot.tblEmployees;
 end;
 
-procedure TfrmWelcome.Image1Click(Sender: TObject);
+procedure TfrmWelcome.imgExitClick(Sender: TObject);
 begin
 
-  // frmDevKit.SizePicture(Image1, 5, 1);
+Application.Terminate;
 
 end;
 

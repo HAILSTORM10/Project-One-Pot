@@ -8,9 +8,16 @@ uses
 
 type
   TfrmMain = class(TForm)
-    pnlCustomers: TPanel;
-    imgCustomerBG: TImage;
-    btnReservations: TButton;
+    PageControl1: TPageControl;
+    tabCustomer: TTabSheet;
+    tabEmployee: TTabSheet;
+    tabAdmin: TTabSheet;
+    imgAdminBG: TImage;
+    Button1: TButton;
+    Panel1: TPanel;
+    imgExit: TImage;
+    procedure Button1Click(Sender: TObject);
+    procedure imgExitClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -23,5 +30,18 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfrmMain.Button1Click(Sender: TObject);
+VAr
+Sline, sWord : string;
+i : integer;
+begin
+
+end;
+
+procedure TfrmMain.imgExitClick(Sender: TObject);
+begin
+Application.Terminate;
+end;
 
 end.

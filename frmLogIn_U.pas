@@ -8,15 +8,29 @@ uses
 
 type
   TfrmLogIn = class(TForm)
-    imgBackdrop: TImage;
-    lblHeader: TLabel;
-    lblSubheadder: TLabel;
+    imgLIBackdrop: TImage;
+    lblLHeader: TLabel;
+    lblLSubheadder: TLabel;
     btnLogin: TButton;
     edtUser: TEdit;
-    edtPass: TEdit;
-    btnReg: TButton;
-    procedure btnRegClick(Sender: TObject);
+    edtLPass: TEdit;
+    btnLReg: TButton;
+    pnlLogin: TPanel;
+    pnlSignUp: TPanel;
+    imgSBackdrop: TImage;
+    edtSName: TEdit;
+    edtSPass: TEdit;
+    edtSurname: TEdit;
+    btnSReg: TButton;
+    lblSHeader: TLabel;
+    lblSSubheader: TLabel;
+    btnBack: TButton;
+    imgExit: TImage;
+    procedure btnLRegClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
+    procedure btnBackClick(Sender: TObject);
+    procedure btnSRegClick(Sender: TObject);
+    procedure imgExitClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -31,8 +45,18 @@ var
 
 implementation
 
-uses Welcome_U, Dash_U, SignUp_U;
+uses Welcome_U, Dash_U, SignUp_U, P1SDK, dmOnePot_U;
 {$R *.dfm}
+
+procedure TfrmLogIn.btnBackClick(Sender: TObject);
+begin
+  // pnlSignUp.Enabled := False;
+  // pnlLogin.Enabled := True;
+  // frmDevKit.PanelSlide(pnlSignUp, 'R', 90);
+
+  pnlSignUp.Hide;
+
+end;
 
 procedure TfrmLogIn.btnLoginClick(Sender: TObject);
 Var
@@ -41,7 +65,7 @@ Var
   i, iStep: integer;
 begin
   // Has data been entered?
-  if (edtUser.Text = '') OR (edtPass.Text = '') then
+  if (edtUser.Text = '') OR (edtLPass.Text = '') then
   begin
     Showmessage('Please provide both a Username and Password!');
     exit;
@@ -65,7 +89,7 @@ begin
     Delete(sLine, 1, POS('~#', sLine) + 1);
     sUID := sLine;
 
-//    Showmessage(sUser + sPass + sUID);
+    // Showmessage(sUser + sPass + sUID);
   until EOF(tUsrDat) OR (sUser = edtUser.Text);
 
   if sUser <> edtUser.Text then
@@ -82,7 +106,7 @@ begin
     sDecrypted := sDecrypted + Chr(ORD(sPass[i]) - iStep);
   // END Decryption
 
-  if sDecrypted <> edtPass.Text then
+  if sDecrypted <> edtLPass.Text then
   begin
     Showmessage('Password Incorrect');
     exit;
@@ -94,7 +118,7 @@ begin
 
 end;
 
-procedure TfrmLogIn.btnRegClick(Sender: TObject);
+procedure TfrmLogIn.btnLRegClick(Sender: TObject);
 var
   tUsrDat: TextFile;
   sNewUser, sNewPass: string;
@@ -102,8 +126,12 @@ var
   i, iSpecial: integer;
 begin
 
-  frmSignUp.show;
-  frmLogIn.Hide;
+  // pnlLogin.Enabled := False;
+  // pnlSignUp.Enabled := True;
+  frmDevKit.PanelSlide(pnlSignUp, 'L', 90);
+
+  { frmSignUp.show;
+    frmLogIn.Hide; }
 
   { // Add a User
 
@@ -200,6 +228,125 @@ begin
     CloseFile(tUsrDat);
     Showmessage('Created User: ' + sNewUser + '!'); }
 
+end;
+
+procedure TfrmLogIn.btnSRegClick(Sender: TObject);
+var
+  tUsrDat: TextFile;
+  sUID, sEncrypted: string;
+  i, iSpecial, iNum, iNum2, iStep: integer;
+begin
+  // Add a User
+
+  // Ensure No blanks
+
+  if (edtSName.Text = '') OR (edtSurname.Text = '') then
+  begin
+    Showmessage('Please enter Your Name and Surname');
+    exit;
+  end;
+
+  if edtSPass.Text = '' then
+  begin
+    Showmessage('Please Enter a Password');
+    exit;
+  end;
+  // END Blanks
+
+  // Vet UserName
+
+  iSpecial := 0;
+
+  for i := 1 to Length(edtSName.Text) do
+    if (NOT(UPCase(edtSName.Text[i]) IN ['A' .. 'Z', ' '])) then
+      inc(iSpecial);
+
+  for i := 1 to Length(edtSurname.Text) do
+    if (NOT(UPCase(edtSurname.Text[i]) IN ['A' .. 'Z', ' '])) then
+      inc(iSpecial);
+
+  if iSpecial > 0 then
+  begin
+    Showmessage('Your name can consist only of letters and spaces');
+    exit;
+  end;
+  // End Vet UserName
+
+  // Vet Password
+  iSpecial := 0;
+
+  if Length(edtSPass.Text) < 8 then
+  begin
+    Showmessage('Password must consist of 8+ Characters');
+    exit;
+  end
+  else
+  begin
+
+    for i := 1 to Length(edtSPass.Text) do
+      if NOT(edtSPass.Text[i] IN ['A' .. 'Z', 'a' .. 'z']) then
+        inc(iSpecial);
+
+    if iSpecial <= 0 then
+    begin
+      Showmessage(inttostr(iSpecial));
+      Showmessage('Your password must contain a special character');
+      exit;
+    end;
+
+  end; // END If
+
+  // END Vet Password
+
+  // Encrypt Password
+  iNum := Random(9) + 1;
+  iNum2 := Random(9) + 1;
+  iStep := iNum + iNum2;
+
+  sEncrypted := inttostr(iNum);
+
+  for i := 1 to Length(edtSPass.Text) do
+    sEncrypted := sEncrypted + Chr(ORD(edtSPass.Text[i]) + iStep);
+
+  sEncrypted := sEncrypted + inttostr(iNum2);
+
+  // End Encryption
+
+  AssignFile(tUsrDat, 'UserData.txt');
+
+  // Create or modify credentials files
+  if Not FileExists('UserData.txt') then
+  begin
+    Rewrite(tUsrDat);
+  end
+  else
+  begin
+    Append(tUsrDat);
+  end;
+
+  sUID := 'C' + UPCase(edtSName.Text[1]) + UPCase(edtSurname.Text[1]) + inttostr
+    ((Random(11)) * 1000 + Random(1000));
+
+  Writeln(tUsrDat,
+    edtSName.Text + ' ' + edtSurname.Text + '~#' + sEncrypted + '~#' + sUID);
+  CloseFile(tUsrDat);
+  Showmessage('Created User: ' + edtSName.Text + '!' + #13 + 'User ID: ' + sUID);
+  frmLogIn.show;
+  frmSignUp.Hide;
+  // End Credentials File
+
+  // Add new user to DB
+  dmOnePot.tblCustomers.Append;
+  dmOnePot.tblCustomers['CusID'] := sUID;
+  dmOnePot.tblCustomers['CusName'] := edtSName.Text;
+  dmOnePot.tblCustomers['CusSurname'] := edtSurname.Text;
+  dmOnePot.tblCustomers.Post;
+  // END DB
+end;
+
+procedure TfrmLogIn.imgExitClick(Sender: TObject);
+begin
+Application.Terminate;
 end;
 
 end.

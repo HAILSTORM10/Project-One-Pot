@@ -33,8 +33,8 @@ var
   arrFunctions: Array [1 .. 10] of boolean;
   // 1 for SizePicture
 
-  pnlPSPanel : tPanel;
-  cPSDirection: char  ;
+  pnlPSPanel: TPanel;
+  cPSDirection: Char;
 
 implementation
 
@@ -55,29 +55,92 @@ begin
   iSPScale := Scale;
 end;
 
-procedure TfrmDevKit.PanelSlide(Panel: TPanel; cDirection: Char; iSpeed: integer);
+procedure TfrmDevKit.PanelSlide(Panel: TPanel; cDirection: Char;
+  iSpeed: integer);
+var
+  iNum: integer;
 begin
+  {
+    pnlPSPanel := Panel;
+    cPSDirection := cDirection;
+    iPSSpeed := iSpeed;
 
-pnlPSPanel := Panel;
-cPSDirection := cDirection;
-iPSSpeed := iSpeed;
+    case cDirection of
+
+    'L':
+    begin
+
+    if Panel.Left > 0 then
+    begin
+    tmrSlide.enabled := true;
+    Panel.Left := Panel.Left - iSpeed;
+    end
+    else
+    tmrSlide.enabled := false;
+
+    end;
+
+    end; }
 
   case cDirection of
 
     'L':
       begin
-
-        if Panel.Left > 0 then
+        while Panel.Left <> 0 do
         begin
-          tmrSlide.enabled := true;
-          Panel.Left := Panel.Left - iSpeed;
-        end
-        else
-          tmrSlide.enabled := false;
+          if Panel.Left - iSpeed < 0then
+          begin
+            Panel.Left := 0;
+          end
+          else
+          begin
+            Panel.Left := Panel.Left - iSpeed;
+            sleep(5);
+          end; // End IF
+        end; // End While
+      end; // END L
 
-      end;
+    'R':
+      begin
 
+        while Panel.Left <> iNum do
+        begin
+
+          if Panel.Left + iSpeed > 1280 then
+          begin
+            Panel.Left := 1280;
+          end
+          else
+          begin
+            Panel.Left := Panel.Left + iSpeed;
+            sleep(5);
+          end; // END If
+        end; // END While
+
+      end; // END R
   end;
+
+{  if cDirection = 'L' then
+  begin
+    iSpeed := iSpeed * -1;
+    iNum := 0;
+  end
+  else
+    iNum := 1280;
+
+  while Panel.Left <> iNum do
+  begin
+
+    if Panel.Left + iSpeed < iNum then
+    begin
+      Panel.Left := iNum;
+    end
+    else
+    begin
+      Panel.Left := Panel.Left + iSpeed;
+      sleep(5);
+    end;
+  end;}
 
 end;
 
@@ -103,7 +166,7 @@ end;
 procedure TfrmDevKit.tmrSlideTimer(Sender: TObject);
 begin
 
-PanelSlide(pnlPSPanel, cPSDirection, iPSSpeed);
+  PanelSlide(pnlPSPanel, cPSDirection, iPSSpeed);
 
 end;
 
