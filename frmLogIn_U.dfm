@@ -13,6 +13,7 @@ object frmLogIn: TfrmLogIn
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pnlLogin: TPanel
@@ -144545,12 +144546,12 @@ object frmLogIn: TfrmLogIn
       OnClick = imgExitClick
     end
     object btnLogin: TButton
-      Left = 624
+      Left = 616
       Top = 472
       Width = 91
       Height = 25
       Caption = 'btnLogin'
-      TabOrder = 0
+      TabOrder = 2
       OnClick = btnLoginClick
     end
     object btnLReg: TButton
@@ -144562,7 +144563,7 @@ object frmLogIn: TfrmLogIn
       Caption = 'I'#39'm new here!'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 1
+      TabOrder = 3
       OnClick = btnLRegClick
     end
     object edtLPass: TEdit
@@ -144573,7 +144574,7 @@ object frmLogIn: TfrmLogIn
       Hint = 'Please enter the corresponding password'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 1
       TextHint = 'What'#39's the password?'
     end
     object edtUser: TEdit
@@ -144581,11 +144582,11 @@ object frmLogIn: TfrmLogIn
       Top = 288
       Width = 121
       Height = 21
-      Hint = 'Please Enter your registered Username'
+      Hint = 'James Bond'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
-      TextHint = 'What'#39's your name?'
+      TabOrder = 0
+      TextHint = 'Enter Your Full Name'
     end
   end
   object pnlSignUp: TPanel
@@ -288568,23 +288569,23 @@ object frmLogIn: TfrmLogIn
       Width = 121
       Height = 21
       TabOrder = 0
-      Text = 'edtSName'
+      TextHint = 'What'#39's Your Name?'
     end
     object edtSPass: TEdit
       Left = 616
       Top = 352
       Width = 121
       Height = 21
-      TabOrder = 1
-      Text = 'edtSPass'
+      TabOrder = 2
+      TextHint = 'What'#39's Your Password?'
     end
     object edtSurname: TEdit
       Left = 616
       Top = 312
       Width = 121
       Height = 21
-      TabOrder = 2
-      Text = 'edtSurname'
+      TabOrder = 1
+      TextHint = 'What'#39's Your Surname?'
     end
     object btnSReg: TButton
       Left = 624

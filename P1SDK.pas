@@ -8,166 +8,242 @@ uses
 
 type
   TfrmDevKit = class(TForm)
-    tmr60FPS: TTimer;
-    tmrDuration: TTimer;
-    tmrSizePicture: TTimer;
-    tmrSlide: TTimer;
-    procedure tmrSizePictureTimer(Sender: TObject);
-    procedure tmrSlideTimer(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-    function TestFunc: String;
-    procedure SizePicture(Picture: TImage; Scale, Period: integer);
-    procedure PanelSlide(Panel: TPanel; cDirection: Char; iSpeed: integer);
+
+    procedure PanelSlide(Panel: TPanel; cDirection: Char);
+    procedure CreateUser(sName, sSurname, sPass: String; cRole: Char);
+
   end;
 
 var
   frmDevKit: TfrmDevKit;
-  // SizePicture
-  iSPScale, iPSSpeed: integer;
-  imgSPPicture: TImage;
-  iSPDuration: integer;
-  /// //
-  arrFunctions: Array [1 .. 10] of boolean;
-  // 1 for SizePicture
-
-  pnlPSPanel: TPanel;
-  cPSDirection: Char;
+  sNewUID: string;
 
 implementation
 
 {$R *.dfm}
 { TfrmDevKit }
 
-procedure TfrmDevKit.SizePicture(Picture: TImage; Scale, Period: integer);
-begin
-
-  { iSizePicture := 0;
-    tmrDuration.interval := Period * 1000; // Speed of animation
-    tmrDuration.enabled := true;
-    tmr60FPS.enabled := true; }
-
-  iSPDuration := Period * 60;
-  tmrSizePicture.enabled := true;
-
-  iSPScale := Scale;
-end;
-
-procedure TfrmDevKit.PanelSlide(Panel: TPanel; cDirection: Char;
-  iSpeed: integer);
+procedure TfrmDevKit.CreateUser(sName, sSurname, sPass: String; cRole: Char);
 var
-  iNum: integer;
+  tUsrDat: TextFile;
+  sEncrypted: string;
+  i, iSpecial, iNum, iNum2, iStep: integer;
 begin
-  {
-    pnlPSPanel := Panel;
-    cPSDirection := cDirection;
-    iPSSpeed := iSpeed;
 
-    case cDirection of
+  // Add a User
 
-    'L':
+  // Ensure No blanks
+
+  if (sName = '') OR (sSurname = '') then
+  begin
+    Showmessage('Please enter Your Name and Surname');
+    exit;
+  end;
+
+  if sPass = '' then
+  begin
+    Showmessage('Please Enter a Password');
+    exit;
+  end;
+  // END Blanks
+
+  // Vet UserName
+
+  iSpecial := 0;
+
+  for i := 1 to Length(sName) do
+    if (NOT(UPCase(sName[i]) IN ['A' .. 'Z', ' '])) then
+      inc(iSpecial);
+
+  for i := 1 to Length(sSurname) do
+    if (NOT(UPCase(sSurname[i]) IN ['A' .. 'Z', ' '])) then
+      inc(iSpecial);
+
+  if iSpecial > 0 then
+  begin
+    Showmessage('Your name can consist only of letters and spaces');
+    exit;
+  end;
+  // End Vet UserName
+
+  // Vet Password
+  iSpecial := 0;
+
+  if Length(sPass) < 8 then
+  begin
+    Showmessage('Password must consist of 8+ Characters');
+    exit;
+  end
+  else
+  begin
+
+    for i := 1 to Length(sPass) do
+      if NOT(sPass[i] IN ['A' .. 'Z', 'a' .. 'z']) then
+        inc(iSpecial);
+
+    if iSpecial <= 0 then
     begin
-
-    if Panel.Left > 0 then
-    begin
-    tmrSlide.enabled := true;
-    Panel.Left := Panel.Left - iSpeed;
-    end
-    else
-    tmrSlide.enabled := false;
-
+      Showmessage(inttostr(iSpecial));
+      Showmessage('Your password must contain a special character');
+      exit;
     end;
 
+  end; // END If
+
+  // END Vet Password
+
+  // Encrypt Password
+  iNum := Random(9) + 1;
+  iNum2 := Random(9) + 1;
+  iStep := iNum + iNum2;
+
+  sEncrypted := inttostr(iNum);
+
+  for i := 1 to Length(sPass) do
+    sEncrypted := sEncrypted + Chr(ORD(sPass[i]) + iStep);
+
+  sEncrypted := sEncrypted + inttostr(iNum2);
+
+  // End Encryption
+
+  AssignFile(tUsrDat, 'DataFiles\UserData.txt');
+
+  // Create or modify credentials files
+  if Not FileExists('DataFiles\UserData.txt') then
+  begin
+    Rewrite(tUsrDat);
+  end
+  else
+  begin
+    Append(tUsrDat);
+  end;
+
+  sNewUID := cRole + UPCase(sName[1]) + UPCase(sSurname[1]) + inttostr
+    ((Random(11)) * 1000 + Random(1000));
+
+  Writeln(tUsrDat, sName + ' ' + sSurname + '~#' + sEncrypted + '~#' + sNewUID);
+  CloseFile(tUsrDat);
+  Showmessage('Created User: ' + sName + '!' + #13 + 'User ID: ' + sNewUID);
+
+  // End Credentials File
+
+end;
+
+procedure TfrmDevKit.PanelSlide(Panel: TPanel; cDirection: Char);
+var
+  iLimit, iDirection, iSpeed: integer;
+begin
+
+  iSpeed := 90;
+
+  // case cDirection of
+
+  { 'L':
+    begin
+    while Panel.Left <> 0 do
+    begin
+    if Panel.Left - iSpeed < 0then
+    begin
+    Panel.Left := 0;
+    end
+    else
+    begin
+    Panel.Left := Panel.Left - iSpeed;
+    sleep(5);
+    end; // End IF
+    end; // End While
+    end; // END L
+
+    'R':
+    begin
+
+    while Panel.Left <> iNum do
+    begin
+
+    if Panel.Left + iSpeed > 1280 then
+    begin
+    Panel.Left := 1280;
+    end
+    else
+    begin
+    Panel.Left := Panel.Left + iSpeed;
+    sleep(5);
+    end; // END If
+    end; // END While
+
+    end; // END R
     end; }
+
+  // end;
 
   case cDirection of
 
     'L':
       begin
-        while Panel.Left <> 0 do
-        begin
-          if Panel.Left - iSpeed < 0then
-          begin
-            Panel.Left := 0;
-          end
-          else
-          begin
-            Panel.Left := Panel.Left - iSpeed;
-            sleep(5);
-          end; // End IF
-        end; // End While
-      end; // END L
+        iSpeed := iSpeed * -1;
+        iLimit := 0;
+      end;
 
     'R':
+      iLimit := 1280;
+
+    'U':
       begin
+        iSpeed := iSpeed * -1;
+        iLimit := 0;
+      end;
 
-        while Panel.Left <> iNum do
-        begin
+    'D':
+      iLimit := 0;
 
-          if Panel.Left + iSpeed > 1280 then
-          begin
-            Panel.Left := 1280;
-          end
-          else
-          begin
-            Panel.Left := Panel.Left + iSpeed;
-            sleep(5);
-          end; // END If
-        end; // END While
-
-      end; // END R
   end;
 
-{  if cDirection = 'L' then
-  begin
-    iSpeed := iSpeed * -1;
-    iNum := 0;
-  end
-  else
-    iNum := 1280;
-
-  while Panel.Left <> iNum do
-  begin
-
-    if Panel.Left + iSpeed < iNum then
+  { if cDirection = 'L' then
     begin
-      Panel.Left := iNum;
+
     end
     else
-    begin
-      Panel.Left := Panel.Left + iSpeed;
-      sleep(5);
-    end;
-  end;}
+    iNum := 1280; }
 
-end;
-
-function TfrmDevKit.TestFunc: String;
-begin
-  result := 'YEEEEEEHAWWWWW';
-end;
-
-procedure TfrmDevKit.tmrSizePictureTimer(Sender: TObject);
-begin
-
-  if iSPDuration > 0 then
+  if cDirection IN ['L', 'R'] then // Moving left or Right
   begin
-    // Its chai
-    imgSPPicture.Height := imgSPPicture.Height + iSPScale;
-    imgSPPicture.Width := imgSPPicture.Width + iSPScale;
-    dec(iSPDuration);
 
-  end;
+    while Panel.Left <> iLimit do
+    begin
 
-end;
+      if Panel.Left + iSpeed < iLimit then
+      begin
+        Panel.Left := iLimit;
+      end
+      else
+      begin
+        Panel.Left := Panel.Left + iSpeed;
+        sleep(5);
+      end;
+    end;
 
-procedure TfrmDevKit.tmrSlideTimer(Sender: TObject);
-begin
+  end // End Moving Left or RIght
+  else // Moving Up or Down
+  begin
+    while Panel.Left <> iLimit do
+    begin
 
-  PanelSlide(pnlPSPanel, cPSDirection, iPSSpeed);
+      if Panel.Top + iSpeed < iLimit then
+      begin
+        Panel.Top := iLimit;
+      end
+      else
+      begin
+        Panel.Top := Panel.Top + iSpeed;
+        sleep(5);
+      end;
+    end;
 
+  end; // ENd up Down
 end;
 
 end.

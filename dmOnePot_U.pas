@@ -12,6 +12,8 @@ type
     dscCustomers: TDataSource;
     tblEmployees: TADOTable;
     dscEmployees: TDataSource;
+    tblStock: TADOTable;
+    dscStock: TDataSource;
   private
     { Private declarations }
   public

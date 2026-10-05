@@ -6,16 +6,15 @@ object dmOnePot: TdmOnePot
     Connected = True
     ConnectionString = 
       'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Users\sohai\Docu' +
-      'ments\GitHub\Project-One-Pot\Database\OnePot.mdb;Persist Securit' +
-      'y Info=False'
+      'ments\GitHub\Project-One-Pot\DataFiles\OnePot.mdb;Mode=ReadWrite' +
+      '|Share Deny None;Persist Security Info=False'
     LoginPrompt = False
-    Mode = cmShareDenyNone
+    Mode = ADODB
     Provider = 'Microsoft.Jet.OLEDB.4.0'
     Left = 32
     Top = 104
   end
   object tblCustomers: TADOTable
-    Active = True
     Connection = conOnePot
     CursorType = ctStatic
     TableName = 'tblCustomers'
@@ -38,5 +37,18 @@ object dmOnePot: TdmOnePot
   object dscEmployees: TDataSource
     Left = 296
     Top = 137
+  end
+  object tblStock: TADOTable
+    Active = True
+    Connection = conOnePot
+    CursorType = ctStatic
+    TableName = 'tblStock'
+    Left = 200
+    Top = 208
+  end
+  object dscStock: TDataSource
+    DataSet = tblStock
+    Left = 296
+    Top = 208
   end
 end
