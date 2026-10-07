@@ -57,6 +57,7 @@ type
     procedure btnAddIngredientClick(Sender: TObject);
     procedure btnBanClick(Sender: TObject);
     procedure btnRegisterClick(Sender: TObject);
+    procedure Image1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -166,6 +167,12 @@ begin
 
 end;
 
+procedure TfrmMain.Image1Click(Sender: TObject);
+begin
+pnlAccounts.Top := 0;
+pnlAccounts.Show;
+end;
+
 procedure TfrmMain.imgExitAdminClick(Sender: TObject);
 begin
   Application.Terminate;
@@ -180,6 +187,7 @@ procedure TfrmMain.imgInventoryClick(Sender: TObject);
 begin
 
   // pnlInventory.Top := -720;
+  pnlInventory.Top := 0;
   pnlInventory.Show;
   // frmdevKit.PanelSlide(pnlInventory, 'D');
 

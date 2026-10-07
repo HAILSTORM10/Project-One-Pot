@@ -41,13 +41,13 @@ begin
   if (sName = '') OR (sSurname = '') then
   begin
     Showmessage('Please enter Your Name and Surname');
-    exit;
+    Abort;
   end;
 
   if sPass = '' then
   begin
     Showmessage('Please Enter a Password');
-    exit;
+    Abort;
   end;
   // END Blanks
 
@@ -66,7 +66,7 @@ begin
   if iSpecial > 0 then
   begin
     Showmessage('Your name can consist only of letters and spaces');
-    exit;
+    Abort;
   end;
   // End Vet UserName
 
@@ -76,7 +76,7 @@ begin
   if Length(sPass) < 8 then
   begin
     Showmessage('Password must consist of 8+ Characters');
-    exit;
+    Abort;
   end
   else
   begin
@@ -89,7 +89,7 @@ begin
     begin
       Showmessage(inttostr(iSpecial));
       Showmessage('Your password must contain a special character');
-      exit;
+      Abort;
     end;
 
   end; // END If
@@ -97,8 +97,8 @@ begin
   // END Vet Password
 
   // Encrypt Password
-  iNum := Random(9) + 1;
-  iNum2 := Random(9) + 1;
+  iNum := Random(5) + 1;
+  iNum2 := Random(5) + 1;
   iStep := iNum + iNum2;
 
   sEncrypted := inttostr(iNum);
@@ -113,13 +113,13 @@ begin
   AssignFile(tUsrDat, 'DataFiles\UserData.txt');
 
   // Create or modify credentials files
-  if Not FileExists('DataFiles\UserData.txt') then
+  if FileExists('DataFiles\UserData.txt') then
   begin
-    Rewrite(tUsrDat);
+    Append(tUsrDat);
   end
   else
   begin
-    Append(tUsrDat);
+    Rewrite(tUsrDat);
   end;
 
   sNewUID := cRole + UPCase(sName[1]) + UPCase(sSurname[1]) + inttostr

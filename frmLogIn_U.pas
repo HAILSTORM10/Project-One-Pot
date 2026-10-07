@@ -91,12 +91,13 @@ begin
     Delete(sLine, 1, POS('~#', sLine) + 1);
     sUID := sLine;
 
-    // Showmessage(sUser + sPass + sUID);
+    Showmessage(sUser + sPass + sUID);
   until EOF(tUsrDat) OR (sUser = edtUser.Text);
 
   if sUser <> edtUser.Text then
   begin
     Showmessage('User Not Found');
+    CloseFile(tUsrDat);
     exit;
   end;
 
@@ -108,11 +109,15 @@ begin
     sDecrypted := sDecrypted + Chr(ORD(sPass[i]) - iStep);
   // END Decryption
 
+  Showmessage(sDecrypted + ' ' + edtLPass.Text);
+
   if sDecrypted <> edtLPass.Text then
   begin
     Showmessage('Password Incorrect');
     exit;
   end;
+
+  CloseFile(tUsrDat);
 
   bLoggedIn := True;
   frmMain.show;
@@ -137,6 +142,14 @@ var
 begin
 
   frmDevKit.CreateUser(edtSName.Text, edtSurname.Text, edtSPass.Text, 'C');
+
+  // Add new user to DB
+  tblCustomers.Append;
+  tblCustomers['CusID'] := sUID;
+  tblCustomers['CusName'] := edtSName.Text;
+  tblCustomers['CusSurname'] := edtSurname.Text;
+  tblCustomers.Post;
+  // END DB
 
   { // Add a User
 
@@ -236,14 +249,6 @@ begin
     sUID);
 
     // End Credentials File }
-
-  // Add new user to DB
-  tblCustomers.Append;
-  tblCustomers['CusID'] := sUID;
-  tblCustomers['CusName'] := edtSName.Text;
-  tblCustomers['CusSurname'] := edtSurname.Text;
-  tblCustomers.Post;
-  // END DB
 
 end;
 

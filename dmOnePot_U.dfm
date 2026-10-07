@@ -15,6 +15,7 @@ object dmOnePot: TdmOnePot
     Top = 104
   end
   object tblCustomers: TADOTable
+    Active = True
     Connection = conOnePot
     CursorType = ctStatic
     TableName = 'tblCustomers'
@@ -35,6 +36,7 @@ object dmOnePot: TdmOnePot
     Top = 136
   end
   object dscEmployees: TDataSource
+    DataSet = tblEmployees
     Left = 296
     Top = 137
   end

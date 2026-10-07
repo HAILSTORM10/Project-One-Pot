@@ -1147,7 +1147,7 @@ object frmMain: TfrmMain
       ImageIndex = 2
       TabVisible = False
       object imgAdminBG: TImage
-        Left = 0
+        Left = 3
         Top = 15
         Width = 1280
         Height = 715
@@ -52331,6 +52331,7 @@ object frmMain: TfrmMain
           0F596EC579C487632A0000000049454E44AE426082}
         Proportional = True
         Stretch = True
+        OnClick = Image1Click
       end
       object Image2: TImage
         Left = 864
@@ -54182,7 +54183,7 @@ object frmMain: TfrmMain
       end
       object pnlAccounts: TPanel
         Left = 376
-        Top = 15
+        Top = -720
         Width = 465
         Height = 711
         Color = clCream
@@ -54247,8 +54248,8 @@ object frmMain: TfrmMain
           OnClick = btnBanClick
         end
         object btnRegister: TButton
-          Left = 166
-          Top = 600
+          Left = 32
+          Top = 520
           Width = 75
           Height = 25
           Caption = 'btnRegister'
@@ -54267,6 +54268,25 @@ object frmMain: TfrmMain
           TitleFont.Height = -11
           TitleFont.Name = 'Tahoma'
           TitleFont.Style = []
+          Columns = <
+            item
+              Expanded = False
+              FieldName = 'empID'
+              Width = 70
+              Visible = True
+            end
+            item
+              Expanded = False
+              FieldName = 'empName'
+              Width = 100
+              Visible = True
+            end
+            item
+              Expanded = False
+              FieldName = 'empSurname'
+              Width = 100
+              Visible = True
+            end>
         end
         object edtName: TEdit
           Left = 32
@@ -54274,7 +54294,7 @@ object frmMain: TfrmMain
           Width = 121
           Height = 21
           TabOrder = 4
-          Text = 'edtName'
+          TextHint = 'Enter Employee Name'
         end
         object edtPass: TEdit
           Left = 32
@@ -54282,28 +54302,28 @@ object frmMain: TfrmMain
           Width = 121
           Height = 21
           TabOrder = 5
-          Text = 'edtPass'
+          TextHint = 'Enter Employee Psswrd'
         end
         object edtSurname: TEdit
           Left = 232
           Top = 416
-          Width = 121
+          Width = 137
           Height = 21
           TabOrder = 6
-          Text = 'edtSurname'
+          TextHint = 'Enter Employee Surname'
+        end
+        object rgpRole: TRadioGroup
+          Left = 232
+          Top = 466
+          Width = 185
+          Height = 74
+          Caption = 'rgpRole'
+          Items.Strings = (
+            'Admin / Manager'
+            'Employee')
+          TabOrder = 7
         end
       end
     end
-  end
-  object rgpRole: TRadioGroup
-    Left = 600
-    Top = 471
-    Width = 185
-    Height = 74
-    Caption = 'rgpRole'
-    Items.Strings = (
-      'Admin / Manager'
-      'Employee')
-    TabOrder = 1
   end
 end
