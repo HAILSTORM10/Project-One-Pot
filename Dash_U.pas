@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, pngimage, ExtCtrls, ComCtrls, StdCtrls, ADODB, DB, dmOnePot_U, Grids,
-  DBGrids;
+  DBGrids, Spin, CheckLst;
 
 type
   TfrmMain = class(TForm)
@@ -19,8 +19,8 @@ type
     imgExitCust: TImage;
     pnlInventory: TPanel;
     imgInventory: TImage;
-    Image1: TImage;
-    Image2: TImage;
+    imgAccounts: TImage;
+    imgMenu: TImage;
     imgLogOut: TImage;
     dbgStock: TDBGrid;
     btnBack: TButton;
@@ -46,6 +46,18 @@ type
     edtPass: TEdit;
     btnRegister: TButton;
     rgpRole: TRadioGroup;
+    pnlMenu: TPanel;
+    pgcMenu: TPageControl;
+    tabEdit: TTabSheet;
+    tabAdd: TTabSheet;
+    clbMenuAdd: TCheckListBox;
+    edtRecipe: TEdit;
+    sedPrepTime: TSpinEdit;
+    edtCostPrice: TEdit;
+    edtSellPrice: TEdit;
+    btnMenuBack: TButton;
+    btnMenuAdd: TButton;
+    dbgMenu: TDBGrid;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -57,7 +69,10 @@ type
     procedure btnAddIngredientClick(Sender: TObject);
     procedure btnBanClick(Sender: TObject);
     procedure btnRegisterClick(Sender: TObject);
-    procedure Image1Click(Sender: TObject);
+    procedure imgAccountsClick(Sender: TObject);
+    procedure imgMenuClick(Sender: TObject);
+    procedure btnMenuBackClick(Sender: TObject);
+    procedure btnMenuAddClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -66,7 +81,7 @@ type
 
 var
   frmMain: TfrmMain;
-  tblStock: TADOTable;
+  tblStock, tblMenu, tblRecipe: TADOTable;
 
 implementation
 
@@ -136,16 +151,77 @@ begin
   // Remember to deduct money
 end;
 
+procedure TfrmMain.btnMenuAddClick(Sender: TObject);
+var
+  i, iMenuID, iIngID, iQuantity: integer;
+begin
+  // Add Basic item Details
+  tblMenu.Append;
+
+  tblMenu['Recipe'] := edtRecipe.text;
+  tblMenu['PrepTime'] := sedPrepTime.Value;
+  tblMenu['TimesSold'] := 0;
+  tblMenu['rcpCost'] := 0;
+  tblMenu['rcpSellPrice'] := 0;
+
+  tblMenu.Post;
+
+  // Link Menu and ingredients through tblRecipe
+  for i := 0 to clbMenuAdd.Items.Count - 1 do
+  begin
+
+    if clbMenuAdd.Checked[i] then
+    begin
+
+      iMenuID := tblMenu['MenuID'];
+
+      // Loop through tblStock to find ingredient ID
+      tblStock.first;
+      while NOT tblStock.Eof do
+      begin
+
+        if tblStock['Ingredient'] = clbMenuAdd.Items[i] then
+        begin
+          iIngID := tblStock['IngID'];
+          iQuantity := StrToInt
+            (Inputbox('Adding ' + edtRecipe.text + ' to menu',
+              'How many portions of ' + tblStock['Ingredient'] + '?', '1'));
+        end;
+        // END ID Looping
+
+        tblRecipe.Append;
+        tblRecipe['Recipe'] := iMenuID;
+        tblRecipe['Ingredient'] := iIngID;
+        tblRecipe['rcpQuantity'] := iQuantity;
+        tblRecipe.Post;
+
+        tblStock.Next;
+      end; // END WHILE
+
+    end; // END if Checked
+
+  end; // END For
+
+  showmessage('Added ' + edtRecipe.text + '!');
+
+end;
+
+procedure TfrmMain.btnMenuBackClick(Sender: TObject);
+begin
+  pnlMenu.Top := -720;
+end;
+
 procedure TfrmMain.btnRegisterClick(Sender: TObject);
 begin
 
-   frmDevKit.CreateUser(edtName.Text, edtSurname.Text, edtPass.Text, rgpRole.Items[rgpRole.ItemIndex][1]);
+  frmDevKit.CreateUser(edtName.text, edtSurname.text, edtPass.text,
+    rgpRole.Items[rgpRole.ItemIndex][1]);
 
   // Add new user to DB
   frmLogIn.tblEmployees.Append;
   frmLogIn.tblEmployees['empID'] := P1SDK.sNewUID;
-  frmLogIn.tblEmployees['empName'] := edtName.Text;
-  frmLogIn.tblEmployees['empSurname'] := edtSurname.Text;
+  frmLogIn.tblEmployees['empName'] := edtName.text;
+  frmLogIn.tblEmployees['empSurname'] := edtSurname.text;
   frmLogIn.tblEmployees.Post;
   // END DB
 
@@ -163,14 +239,16 @@ begin
   end;
 
   pnlInventory.Hide;
-  tblStock := dmOnePot.tblStock
+  tblStock := dmOnePot.tblStock;
+  tblMenu := dmOnePot.tblMenu;
+  tblRecipe := dmOnePot.tblRecipe;
 
 end;
 
-procedure TfrmMain.Image1Click(Sender: TObject);
+procedure TfrmMain.imgAccountsClick(Sender: TObject);
 begin
-pnlAccounts.Top := 0;
-pnlAccounts.Show;
+  pnlAccounts.Top := 0;
+  pnlAccounts.Show;
 end;
 
 procedure TfrmMain.imgExitAdminClick(Sender: TObject);
@@ -184,12 +262,53 @@ begin
 end;
 
 procedure TfrmMain.imgInventoryClick(Sender: TObject);
+var
+  dtItem, dtExpire: TDateTime;
 begin
 
   // pnlInventory.Top := -720;
   pnlInventory.Top := 0;
   pnlInventory.Show;
   // frmdevKit.PanelSlide(pnlInventory, 'D');
+
+  // Determine Expired Stock
+  lbxExpired.Items.Clear;
+
+  tblStock.first;
+  while NOT tblStock.Eof do
+  begin
+
+    dtItem := tblStock['LastRestock'];
+    dtExpire := dtItem + tblStock['ShelfLife'];
+
+    if dtExpire < date then
+    begin
+
+      lbxExpired.Items.Add(tblStock['Ingredient']);
+
+    end;
+
+    tblStock.Next;
+  end; // END While
+  // END Expired
+
+end;
+
+procedure TfrmMain.imgMenuClick(Sender: TObject);
+begin
+
+  pnlMenu.Top := 0;
+
+  // Add ingredients to List Box on "Add" Tab
+
+  tblStock.first;
+
+  while NOT tblStock.Eof do
+  begin
+    clbMenuAdd.Items.Add(tblStock['Ingredient']);
+    tblStock.Next;
+  end;
+  // END Ingredients
 
 end;
 

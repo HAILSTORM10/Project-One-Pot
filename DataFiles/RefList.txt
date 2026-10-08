@@ -2,3 +2,5 @@ Embarcadero DocWiki
 https://docwiki.embarcadero.com/RADStudio/Florence/en/Procedures_and_Functions_(Delphi)?__cf_chl_f_tk=_ob.c1BpyzA.6HJ6IHKDKqb2Ib2AezCxN8pa350IoVM-1783106356-1.0.1.1-EnD8lPXrfUoB_9tg_Bszoq6iJWrIX_pMFoiIZxsRZ44
 
 https://github.com/johnwargo/Delphi-ListBox-Move-Demo
+
+https://www.delphibasics.co.uk/RTL.php?Name=abort
