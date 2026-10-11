@@ -24,9 +24,7 @@ type
     imgLogOut: TImage;
     dbgStock: TDBGrid;
     btnBack: TButton;
-    lbxOutofStock: TListBox;
-    lblOutofStock: TLabel;
-    lbxExpired: TListBox;
+    lbxRestock: TListBox;
     lblExpired: TLabel;
     btnRestock: TButton;
     btnIncStock: TButton;
@@ -58,6 +56,13 @@ type
     btnMenuBack: TButton;
     btnMenuAdd: TButton;
     dbgMenu: TDBGrid;
+    btnEditName: TButton;
+    btnBackAccount: TButton;
+    imgStats: TImage;
+    pnlStats: TPanel;
+    cmbStats: TComboBox;
+    redStats: TRichEdit;
+    lblMoney: TLabel;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -73,21 +78,27 @@ type
     procedure imgMenuClick(Sender: TObject);
     procedure btnMenuBackClick(Sender: TObject);
     procedure btnMenuAddClick(Sender: TObject);
+    procedure btnEditNameClick(Sender: TObject);
+    procedure btnBackAccountClick(Sender: TObject);
+    procedure cmbStatsChange(Sender: TObject);
+    procedure imgStatsClick(Sender: TObject);
+    procedure btnRestockClick(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
+    tblStock, tblMenu, tblRecipe: TADOTable;
   end;
 
 var
   frmMain: TfrmMain;
-  tblStock, tblMenu, tblRecipe: TADOTable;
 
 implementation
 
 uses frmLogIn_U, P1SDK;
 {$R *.dfm}
 
+// Admin Code
 procedure TfrmMain.btnAddIngredientClick(Sender: TObject);
 begin
   tblStock.Append;
@@ -141,6 +152,18 @@ begin
     tblStock.Delete;
     showmessage('Removed ' + sItem + ' from the stock list.');
   end;
+end;
+
+procedure TfrmMain.btnEditNameClick(Sender: TObject);
+var
+  sRecipe: string;
+begin
+
+  sRecipe := tblMenu['Recipe'];
+  tblMenu.edit;
+  tblMenu['Recipe'] := Inputbox('Renaming', 'Rename ' + sRecipe + ' to:',
+    sRecipe);
+  tblMenu.Post;
 end;
 
 procedure TfrmMain.btnIncStockClick(Sender: TObject);
@@ -227,6 +250,41 @@ begin
 
 end;
 
+procedure TfrmMain.btnRestockClick(Sender: TObject);
+var
+  i: integer;
+  tRestData: TextFile;
+begin
+  // Remember to charge for it
+  tblStock.first;
+
+  for i := 0 to lbxRestock.Items.Count - 1 do
+  begin
+
+    while NOT tblStock.Eof do
+    begin
+
+      if lbxRestock.Items[i] = tblStock['Ingredient'] then
+      begin
+
+        tblStock['Quantity'] := tblStock['MaxQuantity'];
+
+      end;
+
+    end; // END While
+
+  end; // END For
+
+  lbxRestock.Items.Clear;
+  showmessage('All Listed Items Restocked!');
+
+end;
+
+procedure frmMain.btnBackAccountClick(Sender: TObject);
+begin
+  pnlAccounts.Top := -720;
+end;
+
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
   case frmLogIn.sUID[1] of
@@ -271,8 +329,8 @@ begin
   pnlInventory.Show;
   // frmdevKit.PanelSlide(pnlInventory, 'D');
 
-  // Determine Expired Stock
-  lbxExpired.Items.Clear;
+  // Determine Stock
+  lbxRestock.Items.Clear;
 
   tblStock.first;
   while NOT tblStock.Eof do
@@ -281,16 +339,12 @@ begin
     dtItem := tblStock['LastRestock'];
     dtExpire := dtItem + tblStock['ShelfLife'];
 
-    if dtExpire < date then
-    begin
-
-      lbxExpired.Items.Add(tblStock['Ingredient']);
-
-    end;
+    if (dtExpire < date) or (tblStock['Quantity'] = 0) then
+      lbxRestock.Items.Add(tblStock['Ingredient']);
 
     tblStock.Next;
   end; // END While
-  // END Expired
+  // END Stock
 
 end;
 
@@ -309,6 +363,47 @@ begin
     tblStock.Next;
   end;
   // END Ingredients
+
+end;
+
+procedure TfrmMain.imgStatsClick(Sender: TObject);
+var
+  tRestData: TextFile;
+  sMoney: string;
+begin
+  pnlStats.Top := 0;
+
+  // Load Money
+  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
+
+  if NOT FileExists('DataFiles\ResturantData.txt') then
+  begin
+    Rewrite(tRestData);
+    Writeln('100000');
+    lblMoney.Caption := FloatToStrF(100000, ffCurrency, 8, 2);
+    CloseFile(tRestData);
+    exit;
+  end
+  else
+    Reset(tRestData);
+
+  Readln(tRestData, sMoney);
+  lblMoney.Caption := FloatToStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
+  CloseFile(tRestData);
+
+end;
+
+// END Admin
+
+procedure TfrmMain.cmbStatsChange(Sender: TObject);
+begin
+
+  case cmbStats.ItemIndex of
+
+    0:
+      redStats.Lines.Add(frmDevKit.MostBought + ' is the most bought item');
+
+  end;
 
 end;
 

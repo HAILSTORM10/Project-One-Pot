@@ -14,6 +14,10 @@ type
     dscEmployees: TDataSource;
     tblStock: TADOTable;
     dscStock: TDataSource;
+    tblMenu: TADOTable;
+    dscMenu: TDataSource;
+    tblRecipe: TADOTable;
+    dscRecipe: TDataSource;
   private
     { Private declarations }
   public

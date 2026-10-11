@@ -13,6 +13,7 @@ type
   public
     { Public declarations }
 
+    function MostBought: string;
     procedure PanelSlide(Panel: TPanel; cDirection: Char);
     procedure CreateUser(sName, sSurname, sPass: String; cRole: Char);
 
@@ -24,6 +25,7 @@ var
 
 implementation
 
+uses frmLogIn_U, Dash_U;
 {$R *.dfm}
 { TfrmDevKit }
 
@@ -130,6 +132,31 @@ begin
   Showmessage('Created User: ' + sName + '!' + #13 + 'User ID: ' + sNewUID);
 
   // End Credentials File
+
+end;
+
+function TfrmDevKit.MostBought: string;
+var
+  sHighest: string;
+  iHighest: integer;
+begin
+
+  frmMain.tblMenu.first;
+  iHighest := 0;
+
+  while NOT frmMain.tblMenu.Eof do
+  begin
+
+    if frmMain.tblMenu['TimesSold'] > iHighest then
+    begin
+      sHighest := frmMain.tblMenu['Recipe'];
+      iHighest := frmMain.tblMenu['TimesSold'];
+    end;
+
+    frmMain.tblMenu.Next;
+  end;
+
+  result := sHighest;
 
 end;
 

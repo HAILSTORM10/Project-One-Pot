@@ -53,4 +53,30 @@ object dmOnePot: TdmOnePot
     Left = 296
     Top = 208
   end
+  object tblMenu: TADOTable
+    Active = True
+    Connection = conOnePot
+    CursorType = ctStatic
+    TableName = 'tblMenu'
+    Left = 200
+    Top = 280
+  end
+  object dscMenu: TDataSource
+    DataSet = tblMenu
+    Left = 296
+    Top = 280
+  end
+  object tblRecipe: TADOTable
+    Active = True
+    Connection = conOnePot
+    CursorType = ctStatic
+    TableName = 'tblRecipe'
+    Left = 200
+    Top = 344
+  end
+  object dscRecipe: TDataSource
+    DataSet = tblRecipe
+    Left = 296
+    Top = 344
+  end
 end
