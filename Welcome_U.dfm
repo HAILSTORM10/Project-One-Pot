@@ -144839,6 +144839,21 @@ object frmWelcome: TfrmWelcome
     Stretch = True
     OnClick = imgExitClick
   end
+  object lblFlavour: TLabel
+    Left = 504
+    Top = 624
+    Width = 288
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = lblFlavourClick
+  end
   object Button1: TButton
     Left = 600
     Top = 552

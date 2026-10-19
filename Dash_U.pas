@@ -51,8 +51,6 @@ type
     clbMenuAdd: TCheckListBox;
     edtRecipe: TEdit;
     sedPrepTime: TSpinEdit;
-    edtCostPrice: TEdit;
-    edtSellPrice: TEdit;
     btnMenuBack: TButton;
     btnMenuAdd: TButton;
     dbgMenu: TDBGrid;
@@ -63,6 +61,13 @@ type
     cmbStats: TComboBox;
     redStats: TRichEdit;
     lblMoney: TLabel;
+    Label1: TLabel;
+    Button1: TButton;
+    Label2: TLabel;
+    Label3: TLabel;
+    Image1: TImage;
+    Label4: TLabel;
+    btnBackStats: TButton;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -79,10 +84,13 @@ type
     procedure btnMenuBackClick(Sender: TObject);
     procedure btnMenuAddClick(Sender: TObject);
     procedure btnEditNameClick(Sender: TObject);
-    procedure btnBackAccountClick(Sender: TObject);
     procedure cmbStatsChange(Sender: TObject);
     procedure imgStatsClick(Sender: TObject);
     procedure btnRestockClick(Sender: TObject);
+    procedure imgLogOutClick(Sender: TObject);
+    procedure btnBackAccountClick(Sender: TObject);
+    procedure tabCustomerContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     { Private declarations }
   public
@@ -111,6 +119,11 @@ begin
   tblStock['Cost'] := StrToInt(Inputbox('Adding an ingredient',
       'Cost per unit of item:', ''));
   tblStock.Post;
+end;
+
+procedure TfrmMain.btnBackAccountClick(Sender: TObject);
+begin
+pnlStats.Top := -720;
 end;
 
 procedure TfrmMain.btnBackClick(Sender: TObject);
@@ -242,7 +255,7 @@ begin
 
   // Add new user to DB
   frmLogIn.tblEmployees.Append;
-  frmLogIn.tblEmployees['empID'] := P1SDK.sNewUID;
+  frmLogIn.tblEmployees['empID'] := frmLogIn.sUID;
   frmLogIn.tblEmployees['empName'] := edtName.text;
   frmLogIn.tblEmployees['empSurname'] := edtSurname.text;
   frmLogIn.tblEmployees.Post;
@@ -254,9 +267,11 @@ procedure TfrmMain.btnRestockClick(Sender: TObject);
 var
   i: integer;
   tRestData: TextFile;
+  rCost: Real;
 begin
   // Remember to charge for it
   tblStock.first;
+  rCost := 0;
 
   for i := 0 to lbxRestock.Items.Count - 1 do
   begin
@@ -267,7 +282,16 @@ begin
       if lbxRestock.Items[i] = tblStock['Ingredient'] then
       begin
 
+        rCost := rCost + tblStock['Cost'] *
+          (tblStock['MaxQuantity'] - tblStock['Quantity']);
         tblStock['Quantity'] := tblStock['MaxQuantity'];
+
+        if rCost > StrToFloat(lblMoney.Caption) then
+        begin
+          showmessage('No monee :(');
+          lblMoney.Caption := '0.00';
+          exit;
+        end;
 
       end;
 
@@ -275,18 +299,26 @@ begin
 
   end; // END For
 
+  // Save monetary changes to label and file
+  lblMoney.Caption := FloatTOStrF(StrToFloat(lblMoney.Caption) - rCost,
+    ffCurrency, 8, 2);
+
+  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
+  Rewrite(tRestData);
+  Writeln(tRestData, FloatTOStr(rCost));
+  CloseFile(tRestData);
+
   lbxRestock.Items.Clear;
   showmessage('All Listed Items Restocked!');
 
 end;
 
-procedure frmMain.btnBackAccountClick(Sender: TObject);
-begin
-  pnlAccounts.Top := -720;
-end;
-
 procedure TfrmMain.FormShow(Sender: TObject);
+var
+  tRestData: TextFile;
+  sMoney: string;
 begin
+  // Load Appropriate Page
   case frmLogIn.sUID[1] of
     'C':
       pgcMain.ActivePage := tabCustomer;
@@ -300,6 +332,25 @@ begin
   tblStock := dmOnePot.tblStock;
   tblMenu := dmOnePot.tblMenu;
   tblRecipe := dmOnePot.tblRecipe;
+
+  // Load Money
+  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
+
+  if NOT FileExists('DataFiles\ResturantData.txt') then
+  begin
+    Rewrite(tRestData);
+    Writeln(tRestData, '100000');
+    lblMoney.Caption := FloatTOStrF(100000, ffCurrency, 8, 2);
+    CloseFile(tRestData);
+    exit;
+  end
+  else
+    Reset(tRestData);
+
+  Readln(tRestData, sMoney);
+  lblMoney.Caption := FloatTOStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
+  CloseFile(tRestData);
+  // End Money
 
 end;
 
@@ -327,7 +378,7 @@ begin
   // pnlInventory.Top := -720;
   pnlInventory.Top := 0;
   pnlInventory.Show;
-  // frmdevKit.PanelSlide(pnlInventory, 'D');
+  // frmDevKit.PanelSlide(pnlInventory, 'R');
 
   // Determine Stock
   lbxRestock.Items.Clear;
@@ -346,6 +397,16 @@ begin
   end; // END While
   // END Stock
 
+end;
+
+procedure TfrmMain.imgLogOutClick(Sender: TObject);
+begin
+  frmLogIn.Show;
+  frmMain.Hide;
+  frmLogIn.bLoggedIn := False;
+
+  frmLogIn.sUID := '';
+  frmLogIn.sUser := '';
 end;
 
 procedure TfrmMain.imgMenuClick(Sender: TObject);
@@ -367,29 +428,14 @@ begin
 end;
 
 procedure TfrmMain.imgStatsClick(Sender: TObject);
-var
-  tRestData: TextFile;
-  sMoney: string;
 begin
   pnlStats.Top := 0;
 
-  // Load Money
-  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
+end;
 
-  if NOT FileExists('DataFiles\ResturantData.txt') then
-  begin
-    Rewrite(tRestData);
-    Writeln('100000');
-    lblMoney.Caption := FloatToStrF(100000, ffCurrency, 8, 2);
-    CloseFile(tRestData);
-    exit;
-  end
-  else
-    Reset(tRestData);
-
-  Readln(tRestData, sMoney);
-  lblMoney.Caption := FloatToStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
-  CloseFile(tRestData);
+procedure TfrmMain.tabCustomerContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
 
 end;
 

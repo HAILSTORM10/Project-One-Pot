@@ -25,17 +25,16 @@ var
 
 implementation
 
-uses frmLogIn_U, Dash_U;
+uses frmLogIn_U, Dash_U, dmOnePot_U;
 {$R *.dfm}
 { TfrmDevKit }
 
 procedure TfrmDevKit.CreateUser(sName, sSurname, sPass: String; cRole: Char);
 var
   tUsrDat: TextFile;
-  sEncrypted: string;
+  sEncrypted, sTemp: string;
   i, iSpecial, iNum, iNum2, iStep: integer;
 begin
-
   // Add a User
 
   // Ensure No blanks
@@ -89,7 +88,6 @@ begin
 
     if iSpecial <= 0 then
     begin
-      Showmessage(inttostr(iSpecial));
       Showmessage('Your password must contain a special character');
       Abort;
     end;
@@ -124,12 +122,16 @@ begin
     Rewrite(tUsrDat);
   end;
 
-  sNewUID := cRole + UPCase(sName[1]) + UPCase(sSurname[1]) + inttostr
+  // sTemp := frmLogIn.sUID;
+
+  frmLogIn.sUID := cRole + UPCase(sName[1]) + UPCase(sSurname[1]) + inttostr
     ((Random(11)) * 1000 + Random(1000));
 
-  Writeln(tUsrDat, sName + ' ' + sSurname + '~#' + sEncrypted + '~#' + sNewUID);
+  Writeln(tUsrDat,
+    sName + ' ' + sSurname + '~#' + sEncrypted + '~#' + frmLogIn.sUID);
   CloseFile(tUsrDat);
-  Showmessage('Created User: ' + sName + '!' + #13 + 'User ID: ' + sNewUID);
+  Showmessage('Created User: ' + sName + '!' + #13 + 'User ID: ' +
+      frmLogIn.sUID);
 
   // End Credentials File
 
@@ -141,19 +143,19 @@ var
   iHighest: integer;
 begin
 
-  frmMain.tblMenu.first;
+  dmOnePot.tblMenu.first;
   iHighest := 0;
 
-  while NOT frmMain.tblMenu.Eof do
+  while NOT dmOnePot.tblMenu.Eof do
   begin
 
-    if frmMain.tblMenu['TimesSold'] > iHighest then
+    if dmOnePot.tblMenu['TimesSold'] > iHighest then
     begin
-      sHighest := frmMain.tblMenu['Recipe'];
-      iHighest := frmMain.tblMenu['TimesSold'];
+      sHighest := dmOnePot.tblMenu['Recipe'];
+      iHighest := dmOnePot.tblMenu['TimesSold'];
     end;
 
-    frmMain.tblMenu.Next;
+    dmOnePot.tblMenu.Next;
   end;
 
   result := sHighest;
@@ -166,46 +168,6 @@ var
 begin
 
   iSpeed := 90;
-
-  // case cDirection of
-
-  { 'L':
-    begin
-    while Panel.Left <> 0 do
-    begin
-    if Panel.Left - iSpeed < 0then
-    begin
-    Panel.Left := 0;
-    end
-    else
-    begin
-    Panel.Left := Panel.Left - iSpeed;
-    sleep(5);
-    end; // End IF
-    end; // End While
-    end; // END L
-
-    'R':
-    begin
-
-    while Panel.Left <> iNum do
-    begin
-
-    if Panel.Left + iSpeed > 1280 then
-    begin
-    Panel.Left := 1280;
-    end
-    else
-    begin
-    Panel.Left := Panel.Left + iSpeed;
-    sleep(5);
-    end; // END If
-    end; // END While
-
-    end; // END R
-    end; }
-
-  // end;
 
   case cDirection of
 
@@ -228,13 +190,6 @@ begin
       iLimit := 0;
 
   end;
-
-  { if cDirection = 'L' then
-    begin
-
-    end
-    else
-    iNum := 1280; }
 
   if cDirection IN ['L', 'R'] then // Moving left or Right
   begin
@@ -259,7 +214,7 @@ begin
     while Panel.Left <> iLimit do
     begin
 
-      if Panel.Top + iSpeed < iLimit then
+      if Panel.Top + iSpeed > iLimit then
       begin
         Panel.Top := iLimit;
       end

@@ -1,15 +1,15 @@
 object dmOnePot: TdmOnePot
   OldCreateOrder = False
+  OnCreate = DataModuleCreate
   Height = 421
   Width = 696
   object conOnePot: TADOConnection
     Connected = True
     ConnectionString = 
-      'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Users\sohai\Docu' +
-      'ments\GitHub\Project-One-Pot\DataFiles\OnePot.mdb;Mode=ReadWrite' +
-      '|Share Deny None;Persist Security Info=False'
+      'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=OnePot.mdb;Mode=Rea' +
+      'dWrite;Persist Security Info=False;'
     LoginPrompt = False
-    Mode = ADODB
+    Mode = cmReadWrite
     Provider = 'Microsoft.Jet.OLEDB.4.0'
     Left = 32
     Top = 104

@@ -73,6 +73,16 @@ begin
     exit;
   end;
 
+  // Admin Log In
+  if (edtUser.Text = 'Admin') AND (edtLPass.Text = 'Admin') then
+  begin
+    sUID := 'Admin';
+    frmMain.Show;
+    frmLogIn.Hide;
+    exit;
+  end;
+
+  // Regular Login
   if NOT FileExists('DataFiles\UserData.txt') then
   begin
     Showmessage('Create a User');
@@ -114,14 +124,17 @@ begin
   if sDecrypted <> edtLPass.Text then
   begin
     Showmessage('Password Incorrect');
+    CloseFile(tUsrDat);
     exit;
   end;
 
   CloseFile(tUsrDat);
 
   bLoggedIn := True;
-  frmMain.show;
+  frmMain.Show;
   frmLogIn.Hide;
+  edtUser.Clear;
+  edtLPass.Clear;
 
 end;
 
@@ -129,7 +142,7 @@ procedure TfrmLogIn.btnLRegClick(Sender: TObject);
 begin
 
   pnlSignUp.Left := 1280;
-  pnlSignUp.show;
+  pnlSignUp.Show;
   frmDevKit.PanelSlide(pnlSignUp, 'L');
 
 end;
@@ -146,6 +159,7 @@ begin
   tblCustomers['CusSurname'] := edtSurname.Text;
   tblCustomers.Post;
   // END DB
+
 
 end;
 

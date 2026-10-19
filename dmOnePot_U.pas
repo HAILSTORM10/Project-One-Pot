@@ -18,6 +18,7 @@ type
     dscMenu: TDataSource;
     tblRecipe: TADOTable;
     dscRecipe: TDataSource;
+    procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,5 +31,16 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TdmOnePot.DataModuleCreate(Sender: TObject);
+begin
+//conOnePot.Connected := true;
+
+tblCustomers.Active := true;
+tblEmployees.Active := true;
+tblStock.Active := true;
+tblMenu.Active := true;
+tblRecipe.Active := true;
+end;
 
 end.
