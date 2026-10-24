@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, pngimage, ExtCtrls, Grids, DBGrids, ADODB, DB;
+  Dialogs, StdCtrls, pngimage, ExtCtrls, Grids, DBGrids, ADODB, DB, ComCtrls;
 
 type
   TfrmLogIn = class(TForm)
@@ -26,6 +26,9 @@ type
     lblSSubheader: TLabel;
     btnBack: TButton;
     imgExit: TImage;
+    dtpDOB: TDateTimePicker;
+    Label1: TLabel;
+    edtPhoneNumber: TEdit;
     procedure btnLRegClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnBackClick(Sender: TObject);
@@ -150,16 +153,18 @@ end;
 procedure TfrmLogIn.btnSRegClick(Sender: TObject);
 begin
 
-  frmDevKit.CreateUser(edtSName.Text, edtSurname.Text, edtSPass.Text, 'C');
+  frmDevKit.CreateUser(edtSName.Text, edtSurname.Text, edtSPass.Text,
+    edtPhoneNumber.Text, dtpDOB.Date, 'C');
 
   // Add new user to DB
   tblCustomers.Append;
   tblCustomers['CusID'] := sUID;
   tblCustomers['CusName'] := edtSName.Text;
   tblCustomers['CusSurname'] := edtSurname.Text;
+  tblCustomers['CusPhoneNumber'] := edtPhoneNumber.Text;
+  tblCustomers['CusDOB'] := dtpDOB.Date;
   tblCustomers.Post;
   // END DB
-
 
 end;
 

@@ -79,4 +79,17 @@ object dmOnePot: TdmOnePot
     Left = 296
     Top = 344
   end
+  object tblReservations: TADOTable
+    Active = True
+    Connection = conOnePot
+    CursorType = ctStatic
+    TableName = 'tblReservations'
+    Left = 456
+    Top = 256
+  end
+  object dscReservations: TDataSource
+    DataSet = tblReservations
+    Left = 536
+    Top = 256
+  end
 end

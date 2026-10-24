@@ -4,3 +4,5 @@ https://docwiki.embarcadero.com/RADStudio/Florence/en/Procedures_and_Functions_(
 https://github.com/johnwargo/Delphi-ListBox-Move-Demo
 
 https://www.delphibasics.co.uk/RTL.php?Name=abort
+
+https://docwiki.embarcadero.com/RADStudio/Florence/en/Date_and_Time_Support

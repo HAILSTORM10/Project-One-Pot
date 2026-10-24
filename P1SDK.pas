@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls;
+  Dialogs, ExtCtrls, DateUtils, Math;
 
 type
   TfrmDevKit = class(TForm)
@@ -13,9 +13,12 @@ type
   public
     { Public declarations }
 
+    function MostProfit: string;
     function MostBought: string;
     procedure PanelSlide(Panel: TPanel; cDirection: Char);
-    procedure CreateUser(sName, sSurname, sPass: String; cRole: Char);
+    procedure CreateUser(sName, sSurname, sPass, sPhone: String;
+      dtDOB: TDateTime; cRole: Char);
+    procedure ListUserBookings;
 
   end;
 
@@ -29,7 +32,8 @@ uses frmLogIn_U, Dash_U, dmOnePot_U;
 {$R *.dfm}
 { TfrmDevKit }
 
-procedure TfrmDevKit.CreateUser(sName, sSurname, sPass: String; cRole: Char);
+procedure TfrmDevKit.CreateUser(sName, sSurname, sPass, sPhone: String;
+  dtDOB: TDateTime; cRole: Char);
 var
   tUsrDat: TextFile;
   sEncrypted, sTemp: string;
@@ -52,7 +56,7 @@ begin
   end;
   // END Blanks
 
-  // Vet UserName
+  // Vet UserName to store in DB
 
   iSpecial := 0;
 
@@ -96,6 +100,36 @@ begin
 
   // END Vet Password
 
+  // Vet Phone Number to Store in DB
+  if Length(sPhone) <> 10 then
+  begin
+    Showmessage('Phone Number to be entered in 0123456789 format');
+    Abort;
+  end;
+
+  for i := 1 to Length(sPhone) do
+    if NOT(sPhone[i] IN ['0' .. '9']) then
+    begin
+      Showmessage('Phone Number may only consist of digits');
+      Abort;
+    end;
+  // End Vet Phone Number
+
+  // Vet Date of Birth to Store in DB
+  if YearOf(Now) - YearOf(dtDOB) < 15 then
+  begin
+    Showmessage('All users must be of 16 years or older');
+    Abort;
+  end;
+
+  if YearOf(Now) - YearOf(dtDOB) > 120 then
+  begin
+    Showmessage(
+      'The oldest recorded person, as of this apps creation, is 117. I`d say congratulations if I actually believed you.');
+    Abort;
+  end;
+  // END Vet DOB
+
   // Encrypt Password
   iNum := Random(5) + 1;
   iNum2 := Random(5) + 1;
@@ -122,8 +156,6 @@ begin
     Rewrite(tUsrDat);
   end;
 
-  // sTemp := frmLogIn.sUID;
-
   frmLogIn.sUID := cRole + UPCase(sName[1]) + UPCase(sSurname[1]) + inttostr
     ((Random(11)) * 1000 + Random(1000));
 
@@ -135,6 +167,21 @@ begin
 
   // End Credentials File
 
+end;
+
+procedure TfrmDevKit.ListUserBookings;
+begin
+  // Add User Bookings to lbxBookings
+  frmMain.lbxBookings.clear;
+  dmOnePot.tblReservations.first;
+  while NOT dmOnePot.tblReservations.Eof do
+  begin
+
+    if dmOnePot.tblReservations['cusID'] = frmLogIn.sUID then
+      frmMain.lbxBookings.Items.Add(dmOnePot.tblReservations['DateReserved']);
+
+    dmOnePot.tblReservations.Next;
+  end;
 end;
 
 function TfrmDevKit.MostBought: string;
@@ -153,6 +200,63 @@ begin
     begin
       sHighest := dmOnePot.tblMenu['Recipe'];
       iHighest := dmOnePot.tblMenu['TimesSold'];
+    end;
+
+    dmOnePot.tblMenu.Next;
+  end;
+
+  result := sHighest;
+
+end;
+
+function TfrmDevKit.MostProfit: string;
+var
+  iSold, iMenu: integer;
+  rProfit, rCost, rHighest: real;
+  sHighest: string;
+begin
+
+  rHighest := 0;
+  // Loop through tblMenu to check for each Menu Item
+  dmOnePot.tblMenu.first;
+
+  while NOT dmOnePot.tblMenu.Eof do
+  begin
+    iMenu := dmOnePot.tblMenu['MenuID'];
+    iSold := dmOnePot.tblMenu['TimesSold'];
+    rCost := 0;
+
+    dmOnePot.tblRecipe.first;
+    while NOT dmOnePot.tblRecipe.Eof do
+    begin
+      // Loop through the Recipe to find ingredients needed
+      if dmOnePot.tblRecipe['MenuID'] = iMenu then
+      begin
+
+        dmOnePot.tblStock.first;
+        while NOT dmOnePot.tblStock.Eof do
+        begin
+          // Calculate cost based on number of ingredient required
+          if dmOnePot.tblStock['IngID'] = dmOnePot.tblRecipe['IngID'] then
+          begin
+            rCost := rCost + (dmOnePot.tblStock['Cost'] * dmOnePot.tblRecipe
+                ['rcpQuantity']);
+          end;
+
+          dmOnePot.tblStock.Next;
+        end;
+      end;
+
+      dmOnePot.tblRecipe.Next;
+    end;
+
+    // rCost := rCost * iSold;
+    rProfit := (rCost + (rCost * 20 / 100)) * iSold; // Apply 20% markup to cost of ingredients, then times sold
+
+    if rHighest < rProfit then
+    begin
+      rHighest := rProfit;
+      sHighest := dmOnePot.tblMenu['Recipe']
     end;
 
     dmOnePot.tblMenu.Next;

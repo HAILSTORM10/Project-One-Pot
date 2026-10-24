@@ -18,6 +18,8 @@ type
     dscMenu: TDataSource;
     tblRecipe: TADOTable;
     dscRecipe: TDataSource;
+    tblReservations: TADOTable;
+    dscReservations: TDataSource;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }
@@ -41,6 +43,7 @@ tblEmployees.Active := true;
 tblStock.Active := true;
 tblMenu.Active := true;
 tblRecipe.Active := true;
+tblReservations.Active := true;
 end;
 
 end.

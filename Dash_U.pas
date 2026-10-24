@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, pngimage, ExtCtrls, ComCtrls, StdCtrls, ADODB, DB, dmOnePot_U, Grids,
-  DBGrids, Spin, CheckLst;
+  DBGrids, Spin, CheckLst, DateUtils;
 
 type
   TfrmMain = class(TForm)
@@ -16,7 +16,6 @@ type
     imgAdminBG: TImage;
     imgExitAdmin: TImage;
     imgExitEmp: TImage;
-    imgExitCust: TImage;
     pnlInventory: TPanel;
     imgInventory: TImage;
     imgAccounts: TImage;
@@ -31,8 +30,6 @@ type
     btnDecStock: TButton;
     btnDelStock: TButton;
     btnAddIngredient: TButton;
-    btnBackup: TButton;
-    btnRestore: TButton;
     pnlAccounts: TPanel;
     dbgCustomers: TDBGrid;
     lblCustomers: TLabel;
@@ -64,10 +61,34 @@ type
     Label1: TLabel;
     Button1: TButton;
     Label2: TLabel;
-    Label3: TLabel;
-    Image1: TImage;
-    Label4: TLabel;
     btnBackStats: TButton;
+    edtPhoneNumber: TEdit;
+    dtpDOB: TDateTimePicker;
+    Label5: TLabel;
+    cbxPosition: TComboBox;
+    imgBackgroundCus: TImage;
+    imgExitCus: TImage;
+    pnlBookingsCus: TPanel;
+    btnBackBooking: TButton;
+    lbxBookings: TListBox;
+    lblMyBookinng: TLabel;
+    redBookings: TRichEdit;
+    lblMakeBooking: TLabel;
+    dtpMakeBooking: TDateTimePicker;
+    Label3: TLabel;
+    spnPeople: TSpinEdit;
+    btnDeleteBooking: TButton;
+    Label4: TLabel;
+    edtRequest: TEdit;
+    Label6: TLabel;
+    lblRequest: TLabel;
+    btnMakeBooking: TButton;
+    imgLoyal: TImage;
+    imgBookings: TImage;
+    imgLogOutCus: TImage;
+    pnlLoyalty: TPanel;
+    btnBackLoyal: TButton;
+    lblName: TLabel;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -89,17 +110,27 @@ type
     procedure btnRestockClick(Sender: TObject);
     procedure imgLogOutClick(Sender: TObject);
     procedure btnBackAccountClick(Sender: TObject);
-    procedure tabCustomerContextPopup(Sender: TObject; MousePos: TPoint;
-      var Handled: Boolean);
+    procedure btnBackStatsClick(Sender: TObject);
+    procedure rgpRoleClick(Sender: TObject);
+    procedure btnBackBookingClick(Sender: TObject);
+    procedure edtRequestChange(Sender: TObject);
+    procedure btnMakeBookingClick(Sender: TObject);
+    procedure imgBookingsClick(Sender: TObject);
+    procedure lbxBookingsClick(Sender: TObject);
+    procedure btnBackLoyalClick(Sender: TObject);
+    procedure imgLoyalClick(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-    tblStock, tblMenu, tblRecipe: TADOTable;
+    tblStock, tblMenu, tblRecipe, tblReserve: TADOTable;
   end;
 
 var
   frmMain: TfrmMain;
+
+CONST
+  arrWages: Array [0 .. 3] of Real = (800, 700, 300, 250);
 
 implementation
 
@@ -123,12 +154,22 @@ end;
 
 procedure TfrmMain.btnBackAccountClick(Sender: TObject);
 begin
-pnlStats.Top := -720;
+  pnlAccounts.Top := -720;
+end;
+
+procedure TfrmMain.btnBackBookingClick(Sender: TObject);
+begin
+  pnlBookingsCus.Left := -1280;
 end;
 
 procedure TfrmMain.btnBackClick(Sender: TObject);
 begin
   pnlInventory.Hide;
+end;
+
+procedure TfrmMain.btnBackStatsClick(Sender: TObject);
+begin
+  pnlStats.Top := -720;
 end;
 
 procedure TfrmMain.btnBanClick(Sender: TObject);
@@ -251,13 +292,27 @@ procedure TfrmMain.btnRegisterClick(Sender: TObject);
 begin
 
   frmDevKit.CreateUser(edtName.text, edtSurname.text, edtPass.text,
-    rgpRole.Items[rgpRole.ItemIndex][1]);
+    edtPhoneNumber.text, dtpDOB.Date, rgpRole.Items[rgpRole.ItemIndex][1]);
 
   // Add new user to DB
   frmLogIn.tblEmployees.Append;
   frmLogIn.tblEmployees['empID'] := frmLogIn.sUID;
   frmLogIn.tblEmployees['empName'] := edtName.text;
   frmLogIn.tblEmployees['empSurname'] := edtSurname.text;
+  frmLogIn.tblEmployees['empPhoneNumber'] := edtPhoneNumber.text;
+  frmLogIn.tblEmployees['empDOB'] := dtpDOB.Date;
+
+  if cbxPosition.ItemIndex <> -1 then
+  begin
+    frmLogIn.tblEmployees['empPosition'] := 'Manager';
+    frmLogIn.tblEmployees['empWage'] := 900;
+  end
+  else
+  begin
+    frmLogIn.tblEmployees['empPosition'] := cbxPosition.text;
+    frmLogIn.tblEmployees['empWage'] := arrWages[cbxPosition.ItemIndex];
+  end;
+
   frmLogIn.tblEmployees.Post;
   // END DB
 
@@ -294,7 +349,7 @@ begin
         end;
 
       end;
-
+      tblStock.Next;
     end; // END While
 
   end; // END For
@@ -332,6 +387,7 @@ begin
   tblStock := dmOnePot.tblStock;
   tblMenu := dmOnePot.tblMenu;
   tblRecipe := dmOnePot.tblRecipe;
+  tblReserve := dmOnePot.tblReservations;
 
   // Load Money
   AssignFile(tRestData, 'DataFiles\ResturantData.txt');
@@ -351,6 +407,24 @@ begin
   lblMoney.Caption := FloatTOStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
   CloseFile(tRestData);
   // End Money
+
+  // Clear Past Reservations
+  tblReserve.first;
+  while NOT tblReserve.Eof do
+  begin
+    if tblReserve['Reserved'] then
+      if tblReserve['DateReserved'] < Date then
+      begin
+        tblReserve.edit;
+        tblReserve['cusID'] := '';
+        tblReserve['Reserved'] := false;
+        tblReserve['DateReserved'] := null;
+        tblReserve['specRequests'] := '';
+        tblReserve.Post;
+      end;
+
+    tblReserve.Next;
+  end;
 
 end;
 
@@ -390,7 +464,7 @@ begin
     dtItem := tblStock['LastRestock'];
     dtExpire := dtItem + tblStock['ShelfLife'];
 
-    if (dtExpire < date) or (tblStock['Quantity'] = 0) then
+    if (dtExpire < Date) or (tblStock['Quantity'] = 0) then
       lbxRestock.Items.Add(tblStock['Ingredient']);
 
     tblStock.Next;
@@ -403,7 +477,7 @@ procedure TfrmMain.imgLogOutClick(Sender: TObject);
 begin
   frmLogIn.Show;
   frmMain.Hide;
-  frmLogIn.bLoggedIn := False;
+  frmLogIn.bLoggedIn := false;
 
   frmLogIn.sUID := '';
   frmLogIn.sUser := '';
@@ -433,13 +507,20 @@ begin
 
 end;
 
-procedure TfrmMain.tabCustomerContextPopup(Sender: TObject; MousePos: TPoint;
-  var Handled: Boolean);
+procedure TfrmMain.rgpRoleClick(Sender: TObject);
 begin
 
-end;
+  if rgpRole.ItemIndex = 1 then
+  begin
+    cbxPosition.Show;
+  end
+  else
+  begin
+    cbxPosition.Hide;
+    cbxPosition.ItemIndex := -1;
+  end;
 
-// END Admin
+end;
 
 procedure TfrmMain.cmbStatsChange(Sender: TObject);
 begin
@@ -449,8 +530,138 @@ begin
     0:
       redStats.Lines.Add(frmDevKit.MostBought + ' is the most bought item');
 
+    1:
+      redStats.Lines.Add(frmDevKit.MostProfit + ' is the most profitable item');
+
   end;
 
+end;
+
+// END Admin Code
+
+// Customer Code
+procedure TfrmMain.edtRequestChange(Sender: TObject);
+begin
+  lblRequest.Caption := 'Characters remaining: ' + IntToStr
+    (40 - length(edtRequest.text))
+end;
+
+procedure TfrmMain.btnMakeBookingClick(Sender: TObject);
+var
+  iPeople: integer;
+  bSuccess: boolean;
+begin
+
+  iPeople := spnPeople.Value;
+  tblReserve.first;
+  bSuccess := false;
+
+  // Vet SpecRequest to add to DB
+  if length(edtRequest.text) > 40 then
+  begin
+    showmessage('Please limit your request to 40 characters or less');
+    exit;
+  end;
+
+  while NOT tblReserve.Eof do
+  begin
+    // If table isn't reserved and can seat everyone, book it
+    if NOT tblReserve['Reserved'] then
+    begin
+      if iPeople <= tblReserve['Seating'] then
+      begin
+        tblReserve.edit;
+        tblReserve['CusID'] := frmLogIn.sUID;
+        tblReserve['Reserved'] := True;
+        tblReserve['DateReserved'] := Dateof(dtpMakeBooking.Date);
+        tblReserve['SpecRequests'] := edtRequest.text;
+        tblReserve.Post;
+        bSuccess := True;
+        break;
+      end
+      else
+        tblReserve.Next;
+
+    end;
+
+    tblReserve.Next;
+  end;
+
+  // Report outcome to user
+  if NOT bSuccess then
+  begin
+    showmessage('Unable to make booking!' + #13 +
+        'No tables are available on ' + DateToStr
+        (dtpMakeBooking.Date) + ' for ' + IntToStr(spnPeople.Value)
+        + ' people!');
+  end
+  else
+  begin
+    showmessage('Created booking on ' + DateToStr(dtpMakeBooking.Date)
+        + ' for ' + IntToStr(spnPeople.Value) + ' successfully!' + #13 +
+        'Look forward to seeing you!');
+  end;
+
+  // clear details
+  spnPeople.Value := 0;
+  edtRequest.text := '';
+  lblRequest.Hide;
+
+  // List all of the users bookings
+  frmDevKit.ListUserBookings;
+
+end;
+
+procedure TfrmMain.imgBookingsClick(Sender: TObject);
+begin
+  pnlBookingsCus.Left := 0;
+
+  frmDevKit.ListUserBookings;
+
+  // Disallow past dates from being chosen
+  dtpMakeBooking.MinDate := Date;
+
+end;
+
+procedure TfrmMain.lbxBookingsClick(Sender: TObject);
+begin
+
+  // Find Reservation then Display Details
+  tblReserve.first;
+  while NOT tblReserve.Eof do
+  begin
+
+    if (tblReserve['cusID'] = frmLogIn.sUID) AND
+      (tblReserve['DateReserved'] = lbxBookings.Items[lbxBookings.ItemIndex])
+      then
+    begin
+
+      with redBookings.Lines do
+      begin
+        Clear;
+        Add('Date: ' + FormatDateTime('dddd, dd mmmm yyyy',
+            tblReserve['DateReserved']));
+        Add('Table Number: ' + IntToStr(tblReserve['TableNumber']));
+        Add('Special Requests: ' + tblReserve['specRequests']);
+
+      end; // END With
+    end; // END If
+
+    tblReserve.Next;
+  end; // END While
+
+end;
+
+procedure TfrmMain.btnBackLoyalClick(Sender: TObject);
+begin
+  pnlLoyalty.Left := 1280;
+end;
+
+procedure TfrmMain.imgLoyalClick(Sender: TObject);
+begin
+  pnlLoyalty.Left := 632;
+
+  lblName.Caption := frmLogIn.sUser;
 end;
 
 end.

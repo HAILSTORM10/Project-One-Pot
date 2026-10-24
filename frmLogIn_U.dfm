@@ -288837,6 +288837,19 @@ object frmLogIn: TfrmLogIn
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object Label1: TLabel
+      Left = 505
+      Top = 402
+      Width = 89
+      Height = 19
+      Caption = 'Date of Birth'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
     object edtSName: TEdit
       Left = 616
       Top = 264
@@ -288847,7 +288860,7 @@ object frmLogIn: TfrmLogIn
     end
     object edtSPass: TEdit
       Left = 616
-      Top = 352
+      Top = 350
       Width = 121
       Height = 21
       TabOrder = 2
@@ -288863,7 +288876,7 @@ object frmLogIn: TfrmLogIn
     end
     object btnSReg: TButton
       Left = 624
-      Top = 416
+      Top = 503
       Width = 113
       Height = 25
       Caption = 'Yep, That'#39's me!'
@@ -288878,6 +288891,23 @@ object frmLogIn: TfrmLogIn
       Caption = 'Log in'
       TabOrder = 4
       OnClick = btnBackClick
+    end
+    object dtpDOB: TDateTimePicker
+      Left = 600
+      Top = 400
+      Width = 186
+      Height = 21
+      Date = 46319.642476712960000000
+      Time = 46319.642476712960000000
+      TabOrder = 5
+    end
+    object edtPhoneNumber: TEdit
+      Left = 616
+      Top = 445
+      Width = 121
+      Height = 21
+      TabOrder = 6
+      TextHint = 'Your Phone Number'
     end
   end
 end
