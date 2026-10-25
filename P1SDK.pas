@@ -19,6 +19,7 @@ type
     procedure PanelSlide(Panel: TPanel; cDirection: Char);
     procedure CreateUser(sName, sSurname, sPass, sPhone: String;
       dtDOB: TDateTime; cRole: Char);
+    procedure DecreaseStock(sItem: string);
     procedure ListUserBookings;
     procedure LoadMenu;
 
@@ -171,6 +172,53 @@ begin
 
 end;
 
+procedure TfrmDevKit.DecreaseStock(sItem: string);
+var
+  iMenuID: integer;
+begin
+
+  // Look for chosen Item
+  dmOnePot.tblMenu.First;
+  while NOT dmOnePot.tblMenu.eof do
+  begin
+
+    if dmOnePot.tblMenu['Recipe'] = sItem then
+    begin
+      iMenuID := dmOnePot.tblMenu['MenuID'];
+
+      // Loop tblRecipe to get ingredients and quantity
+      dmOnePot.tblRecipe.First;
+      while NOT dmOnePot.tblRecipe.eof do
+      begin
+        // Loop through the Recipe to find ingredients needed
+        if dmOnePot.tblRecipe['MenuID'] = iMenuID then
+        begin
+
+          dmOnePot.tblStock.First;
+          while NOT dmOnePot.tblStock.eof do
+          begin
+            // Use ingredients based on number of ingredient required
+            if dmOnePot.tblStock['IngID'] = dmOnePot.tblRecipe['IngID'] then
+            begin
+              dmOnePot.tblStock.Edit;
+              dmOnePot.tblStock['Quantity'] := dmOnePot.tblStock['Quantity']
+                - dmOnePot.tblRecipe['rcpQuantity']
+            end;
+
+            dmOnePot.tblStock.next;
+          end; // END While Stock
+        end;
+
+        dmOnePot.tblRecipe.next;
+      end; // END While Recipe
+      break;
+    end; // END If Menu
+
+    dmOnePot.tblMenu.next;
+  end; // END While Menu
+
+end;
+
 function TfrmDevKit.ItemPrice(sItem: string): real;
 var
   iMenuID: integer;
@@ -218,7 +266,8 @@ begin
     dmOnePot.tblMenu.next;
   end; // END While Menu
 
-  result := rCost + (rCost * 2.5); // Apply markup to cost of ingredients
+  rCost := rCost + (rCost * 2.5); // Apply markup to cost of ingredients
+  result := rCost + (rCost * 15/100) //Apply VAT
 
 end;
 
@@ -384,7 +433,7 @@ begin
   end // End Moving Left or RIght
   else // Moving Up or Down
   begin
-    while Panel.Left <> iLimit do
+    while Panel.Top <> iLimit do
     begin
 
       if Panel.Top + iSpeed > iLimit then
