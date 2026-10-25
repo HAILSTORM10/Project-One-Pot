@@ -89,6 +89,16 @@ type
     pnlLoyalty: TPanel;
     btnBackLoyal: TButton;
     lblName: TLabel;
+    redLoyalty: TRichEdit;
+    imgBackgroundEMP: TImage;
+    imgMenuEmp: TImage;
+    pnlMenuEMP: TPanel;
+    Button2: TButton;
+    lbxMenu: TListBox;
+    edtSearch: TEdit;
+    btnAddtoCart: TButton;
+    redReceipt: TRichEdit;
+    btnCheckOut: TButton;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -119,36 +129,81 @@ type
     procedure lbxBookingsClick(Sender: TObject);
     procedure btnBackLoyalClick(Sender: TObject);
     procedure imgLoyalClick(Sender: TObject);
+    procedure edtSearchChange(Sender: TObject);
+    procedure imgMenuEmpClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure btnAddtoCartClick(Sender: TObject);
+    procedure btnCheckOutClick(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-    tblStock, tblMenu, tblRecipe, tblReserve: TADOTable;
+    tblStock, tblMenu, tblRecipe, tblReserve, tblCusts: TADOTable;
   end;
 
 var
   frmMain: TfrmMain;
+  arrCart: Array of String;
 
 CONST
-  arrWages: Array [0 .. 3] of Real = (800, 700, 300, 250);
+  arrWages: Array [0 .. 3] of Real = (800.00, 700.00, 300.00, 250.00);
 
 implementation
 
 uses frmLogIn_U, P1SDK;
 {$R *.dfm}
 
-// Admin Code
+// Admin Code 
 procedure TfrmMain.btnAddIngredientClick(Sender: TObject);
+var
+  sInput: string;
+  i: integer;
 begin
+
   tblStock.Append;
-  tblStock['Ingredients'] := Inputbox('Adding an ingredient',
-    'Ingredients Name:', 'Ben');
+
+  // Vet Name to store 
+  sInput := Inputbox('Adding an ingredient', 'Ingredients Name:', 'Ben'); ;
+  if Length(sInput) > 20 then
+  begin
+    Showmessage('Name should be 20 characters or less!');
+    exit;
+  end;
+  tblStock['Ingredients'] := sInput;
+
   tblStock['MaxQuantity'] := StrToInt(Inputbox('Adding an ingredient',
       'Maximum number we can hold:', '999'));
-  tblStock['Quantity'] := StrToInt(Inputbox('Adding an ingredient',
-      'How much we have:', '0'));
-  tblStock['Cost'] := StrToInt(Inputbox('Adding an ingredient',
-      'Cost per unit of item:', ''));
+
+  // Vet Quantity to store 
+  sInput := Inputbox('Adding an ingredient', 'How much we have:', '0');
+
+  if StrToInt(sInput) < 0 then
+  begin
+    Showmessage('We cannot have negative amounts of ingredients!');
+    exit;
+  end;
+  tblStock['Quantity'] := StrToInt(sInput);
+
+  // Vet Currency to store 
+  sInput := (Inputbox('Adding an ingredient', 'Cost per unit of item:',
+      '10.00'));
+
+  if NOT(sInput = '') then
+  begin
+    for i := 1 to Length(sInput) do
+      if NOT(sInput[i] IN ['0' .. '9', '.']) then
+      begin
+        Showmessage('Enter a valid real number');
+        exit;
+      end;
+  end
+  else
+  begin
+    Showmessage('Value cannot be blank!');
+    exit;
+  end;
+
+  tblStock['Cost'] := StrToFloat(sInput);
   tblStock.Post;
 end;
 
@@ -183,7 +238,7 @@ begin
     = mrYes then
   begin
     frmLogIn.tblCustomers.Delete;
-    showmessage('Banned ' + sName + ' from resturant.');
+    Showmessage('Banned ' + sName + ' from resturant.');
   end;
 end;
 
@@ -204,7 +259,7 @@ begin
   if MessageDlg('Delete ' + sItem + '?', mtWarning, mbYesNo, 0) = mrYes then
   begin
     tblStock.Delete;
-    showmessage('Removed ' + sItem + ' from the stock list.');
+    Showmessage('Removed ' + sItem + ' from the stock list.');
   end;
 end;
 
@@ -225,25 +280,23 @@ begin
   tblStock.edit;
   tblStock['Quantity'] := tblStock['Quantity'] + 1;
   tblStock.Post;
-  // Remember to deduct money
+  // Remember to deduct money 
 end;
 
 procedure TfrmMain.btnMenuAddClick(Sender: TObject);
 var
   i, iMenuID, iIngID, iQuantity: integer;
 begin
-  // Add Basic item Details
+  // Add Basic item Details 
   tblMenu.Append;
 
   tblMenu['Recipe'] := edtRecipe.text;
   tblMenu['PrepTime'] := sedPrepTime.Value;
   tblMenu['TimesSold'] := 0;
-  tblMenu['rcpCost'] := 0;
-  tblMenu['rcpSellPrice'] := 0;
 
   tblMenu.Post;
 
-  // Link Menu and ingredients through tblRecipe
+  // Link Menu and ingredients through tblRecipe 
   for i := 0 to clbMenuAdd.Items.Count - 1 do
   begin
 
@@ -252,7 +305,7 @@ begin
 
       iMenuID := tblMenu['MenuID'];
 
-      // Loop through tblStock to find ingredient ID
+      // Loop through tblStock to find ingredient ID 
       tblStock.first;
       while NOT tblStock.Eof do
       begin
@@ -263,23 +316,24 @@ begin
           iQuantity := StrToInt
             (Inputbox('Adding ' + edtRecipe.text + ' to menu',
               'How many portions of ' + tblStock['Ingredient'] + '?', '1'));
-        end;
-        // END ID Looping
 
-        tblRecipe.Append;
-        tblRecipe['Recipe'] := iMenuID;
-        tblRecipe['Ingredient'] := iIngID;
-        tblRecipe['rcpQuantity'] := iQuantity;
-        tblRecipe.Post;
+          tblRecipe.Append;
+          tblRecipe['MenuID'] := iMenuID;
+          tblRecipe['IngID'] := iIngID;
+          tblRecipe['rcpQuantity'] := iQuantity;
+          tblRecipe.Post;
+
+        end;
+        // END ID Looping 
 
         tblStock.Next;
-      end; // END WHILE
+      end; // END WHILE 
 
-    end; // END if Checked
+    end; // END if Checked 
 
-  end; // END For
+  end; // END For 
 
-  showmessage('Added ' + edtRecipe.text + '!');
+  Showmessage('Added ' + edtRecipe.text + '!');
 
 end;
 
@@ -294,7 +348,7 @@ begin
   frmDevKit.CreateUser(edtName.text, edtSurname.text, edtPass.text,
     edtPhoneNumber.text, dtpDOB.Date, rgpRole.Items[rgpRole.ItemIndex][1]);
 
-  // Add new user to DB
+  // Add new user to DB 
   frmLogIn.tblEmployees.Append;
   frmLogIn.tblEmployees['empID'] := frmLogIn.sUID;
   frmLogIn.tblEmployees['empName'] := edtName.text;
@@ -314,7 +368,7 @@ begin
   end;
 
   frmLogIn.tblEmployees.Post;
-  // END DB
+  // END DB 
 
 end;
 
@@ -324,7 +378,7 @@ var
   tRestData: TextFile;
   rCost: Real;
 begin
-  // Remember to charge for it
+  // Remember to charge for it 
   tblStock.first;
   rCost := 0;
 
@@ -343,18 +397,18 @@ begin
 
         if rCost > StrToFloat(lblMoney.Caption) then
         begin
-          showmessage('No monee :(');
+          Showmessage('No monee :(');
           lblMoney.Caption := '0.00';
           exit;
         end;
 
       end;
       tblStock.Next;
-    end; // END While
+    end; // END While 
 
-  end; // END For
+  end; // END For 
 
-  // Save monetary changes to label and file
+  // Save monetary changes to label and file 
   lblMoney.Caption := FloatTOStrF(StrToFloat(lblMoney.Caption) - rCost,
     ffCurrency, 8, 2);
 
@@ -364,8 +418,13 @@ begin
   CloseFile(tRestData);
 
   lbxRestock.Items.Clear;
-  showmessage('All Listed Items Restocked!');
+  Showmessage('All Listed Items Restocked!');
 
+end;
+
+procedure TfrmMain.Button2Click(Sender: TObject);
+begin
+  pnlMenuEMP.Top := -720;
 end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
@@ -373,7 +432,7 @@ var
   tRestData: TextFile;
   sMoney: string;
 begin
-  // Load Appropriate Page
+  // Load Appropriate Page 
   case frmLogIn.sUID[1] of
     'C':
       pgcMain.ActivePage := tabCustomer;
@@ -388,8 +447,9 @@ begin
   tblMenu := dmOnePot.tblMenu;
   tblRecipe := dmOnePot.tblRecipe;
   tblReserve := dmOnePot.tblReservations;
+  tblCusts := dmOnePot.tblCustomers;
 
-  // Load Money
+  // Load Money 
   AssignFile(tRestData, 'DataFiles\ResturantData.txt');
 
   if NOT FileExists('DataFiles\ResturantData.txt') then
@@ -406,9 +466,9 @@ begin
   Readln(tRestData, sMoney);
   lblMoney.Caption := FloatTOStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
   CloseFile(tRestData);
-  // End Money
+  // End Money 
 
-  // Clear Past Reservations
+  // Clear Past Reservations 
   tblReserve.first;
   while NOT tblReserve.Eof do
   begin
@@ -424,6 +484,16 @@ begin
       end;
 
     tblReserve.Next;
+  end;
+
+  // Set up redReceipt for Employees 
+  with redReceipt do
+  begin
+    Clear;
+    Paragraph.TabCount := 2;
+    Paragraph.Tab[0] := 100;
+    Paragraph.Tab[1] := 200;
+    Lines.Add('Item' + #9 + 'Price');
   end;
 
 end;
@@ -449,12 +519,12 @@ var
   dtItem, dtExpire: TDateTime;
 begin
 
-  // pnlInventory.Top := -720;
+  // pnlInventory.Top := -720; 
   pnlInventory.Top := 0;
   pnlInventory.Show;
-  // frmDevKit.PanelSlide(pnlInventory, 'R');
+  // frmDevKit.PanelSlide(pnlInventory, 'R'); 
 
-  // Determine Stock
+  // Determine Stock 
   lbxRestock.Items.Clear;
 
   tblStock.first;
@@ -468,13 +538,14 @@ begin
       lbxRestock.Items.Add(tblStock['Ingredient']);
 
     tblStock.Next;
-  end; // END While
-  // END Stock
+  end; // END While 
+  // END Stock 
 
 end;
 
 procedure TfrmMain.imgLogOutClick(Sender: TObject);
 begin
+  // Clear User Details and return to log in 
   frmLogIn.Show;
   frmMain.Hide;
   frmLogIn.bLoggedIn := false;
@@ -488,7 +559,7 @@ begin
 
   pnlMenu.Top := 0;
 
-  // Add ingredients to List Box on "Add" Tab
+  // Add ingredients to List Box on "Add" Tab 
 
   tblStock.first;
 
@@ -497,7 +568,7 @@ begin
     clbMenuAdd.Items.Add(tblStock['Ingredient']);
     tblStock.Next;
   end;
-  // END Ingredients
+  // END Ingredients 
 
 end;
 
@@ -510,6 +581,7 @@ end;
 procedure TfrmMain.rgpRoleClick(Sender: TObject);
 begin
 
+  // Only display position box if not manager 
   if rgpRole.ItemIndex = 1 then
   begin
     cbxPosition.Show;
@@ -537,13 +609,13 @@ begin
 
 end;
 
-// END Admin Code
+// END Admin Code 
 
-// Customer Code
+// Customer Code 
 procedure TfrmMain.edtRequestChange(Sender: TObject);
 begin
   lblRequest.Caption := 'Characters remaining: ' + IntToStr
-    (40 - length(edtRequest.text))
+    (40 - Length(edtRequest.text))
 end;
 
 procedure TfrmMain.btnMakeBookingClick(Sender: TObject);
@@ -556,16 +628,16 @@ begin
   tblReserve.first;
   bSuccess := false;
 
-  // Vet SpecRequest to add to DB
-  if length(edtRequest.text) > 40 then
+  // Vet SpecRequest to add to DB 
+  if Length(edtRequest.text) > 40 then
   begin
-    showmessage('Please limit your request to 40 characters or less');
+    Showmessage('Please limit your request to 40 characters or less');
     exit;
   end;
 
   while NOT tblReserve.Eof do
   begin
-    // If table isn't reserved and can seat everyone, book it
+    // If table isn't reserved and can seat everyone, book it 
     if NOT tblReserve['Reserved'] then
     begin
       if iPeople <= tblReserve['Seating'] then
@@ -587,27 +659,42 @@ begin
     tblReserve.Next;
   end;
 
-  // Report outcome to user
+  // Report outcome to user 
   if NOT bSuccess then
   begin
-    showmessage('Unable to make booking!' + #13 +
+    Showmessage('Unable to make booking!' + #13 +
         'No tables are available on ' + DateToStr
         (dtpMakeBooking.Date) + ' for ' + IntToStr(spnPeople.Value)
         + ' people!');
+    exit;
   end
   else
   begin
-    showmessage('Created booking on ' + DateToStr(dtpMakeBooking.Date)
+    Showmessage('Created booking on ' + DateToStr(dtpMakeBooking.Date)
         + ' for ' + IntToStr(spnPeople.Value) + ' successfully!' + #13 +
         'Look forward to seeing you!');
   end;
 
-  // clear details
+  // clear details 
   spnPeople.Value := 0;
   edtRequest.text := '';
   lblRequest.Hide;
 
-  // List all of the users bookings
+  // Increase number of total bookings made by user 
+  tblCusts.first;
+  while NOT tblCusts.Eof do
+  begin
+    if tblCusts['cusID'] = frmLogIn.sUID then
+    begin
+      tblCusts.edit;
+      tblCusts['cusTotalReservations'] := tblCusts['cusTotalReservations'] + 1;
+      tblCusts.Post;
+      break;
+    end;
+    tblCusts.Next;
+  end;
+
+  // List all of the users bookings 
   frmDevKit.ListUserBookings;
 
 end;
@@ -618,7 +705,7 @@ begin
 
   frmDevKit.ListUserBookings;
 
-  // Disallow past dates from being chosen
+  // Disallow past dates from being chosen 
   dtpMakeBooking.MinDate := Date;
 
 end;
@@ -626,7 +713,7 @@ end;
 procedure TfrmMain.lbxBookingsClick(Sender: TObject);
 begin
 
-  // Find Reservation then Display Details
+  // Find Reservation then Display Details 
   tblReserve.first;
   while NOT tblReserve.Eof do
   begin
@@ -644,11 +731,11 @@ begin
         Add('Table Number: ' + IntToStr(tblReserve['TableNumber']));
         Add('Special Requests: ' + tblReserve['specRequests']);
 
-      end; // END With
-    end; // END If
+      end; // END With 
+    end; // END If 
 
     tblReserve.Next;
-  end; // END While
+  end; // END While 
 
 end;
 
@@ -658,10 +745,118 @@ begin
 end;
 
 procedure TfrmMain.imgLoyalClick(Sender: TObject);
+var
+  dtJoinDate, dtBirthday: TDateTime;
+  iReservations: integer;
 begin
   pnlLoyalty.Left := 632;
 
   lblName.Caption := frmLogIn.sUser;
+
+  // Loop tabl for customer details 
+  tblCusts.first;
+  while NOT tblCusts.Eof do
+  begin
+
+    if tblCusts['cusID'] = frmLogIn.sUID then
+    begin
+      dtJoinDate := tblCusts['CusJoinDate'];
+      dtBirthday := tblCusts['cusDOB'];
+      iReservations := tblCusts['cusTotalReservations'];
+      break;
+    end;
+
+    tblCusts.Next;
+  end;
+
+  with redLoyalty.Lines do
+  begin
+    Clear;
+    Add('Member since ' + FormatDateTime('mmmm dd, yyyy', dtJoinDate));
+    Add('Total Reservations you`ve made: ' + IntToStr(iReservations));
+
+    // Determine Loyalty Status based on reservations 
+    case iReservations of
+
+      0 .. 4:
+        Add('Member Status: Bronze');
+
+      5 .. 9:
+        Add('Member Status: Silver');
+
+      10 .. 14:
+        Add('Member Status: Gold');
+
+    else
+      Add('Member Status: Platinum');
+
+    end; // END Case 
+
+    if FormatDateTime('dd mmmm', dtBirthday) = FormatDateTime('dd mmmm', Date)
+      then
+      Add(#13 + 'Happy Birthday!');
+
+  end; // END With 
+
+end;
+// End Customer Code 
+
+// Employee Code 
+
+procedure TfrmMain.imgMenuEmpClick(Sender: TObject);
+begin
+
+  pnlMenuEMP.Top := 0;
+  frmDevKit.LoadMenu;
+  frmMain.edtSearch.Clear;
+end;
+
+procedure TfrmMain.edtSearchChange(Sender: TObject);
+begin
+
+  if NOT(edtSearch.text = '') then
+  begin
+    lbxMenu.Clear;
+
+    tblMenu.first;
+    while NOT tblMenu.Eof do
+    begin
+
+      if POS(UpperCase(edtSearch.text), UpperCase(tblMenu['Recipe'])) > 0 then
+        lbxMenu.Items.Add(tblMenu['Recipe']);
+
+      tblMenu.Next;
+    end; // END While 
+
+  end; // END If 
+
+  if edtSearch.text = '' then
+  begin
+    frmDevKit.LoadMenu;
+  end;
+
+end;
+
+procedure TfrmMain.btnCheckOutClick(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 0 to Length(arrCart) - 1 do
+    Showmessage(arrCart[i])
+end;
+
+procedure TfrmMain.btnAddtoCartClick(Sender: TObject);
+var
+  sItem: string;
+begin
+
+  sItem := lbxMenu.Items[lbxMenu.ItemIndex];
+  SetLength(arrCart, Length(arrCart) + 1);
+  arrCart[Length(arrCart) - 1] := sItem;
+
+  redReceipt.Lines.Add(sItem + #9 + FloatTOStrF(frmDevKit.ItemPrice(sItem),
+      ffCurrency, 8, 2));
+
 end;
 
 end.

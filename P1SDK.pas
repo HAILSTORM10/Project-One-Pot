@@ -15,10 +15,12 @@ type
 
     function MostProfit: string;
     function MostBought: string;
+    function ItemPrice(sItem: string): real;
     procedure PanelSlide(Panel: TPanel; cDirection: Char);
     procedure CreateUser(sName, sSurname, sPass, sPhone: String;
       dtDOB: TDateTime; cRole: Char);
     procedure ListUserBookings;
+    procedure LoadMenu;
 
   end;
 
@@ -169,19 +171,86 @@ begin
 
 end;
 
+function TfrmDevKit.ItemPrice(sItem: string): real;
+var
+  iMenuID: integer;
+  rCost: real;
+begin
+
+  rCost := 0;
+
+  // Look for chosen Item
+  dmOnePot.tblMenu.First;
+  while NOT dmOnePot.tblMenu.eof do
+  begin
+
+    if dmOnePot.tblMenu['Recipe'] = sItem then
+    begin
+      iMenuID := dmOnePot.tblMenu['MenuID'];
+
+      // Loop tblRecipe to get ingredients and quantity
+      dmOnePot.tblRecipe.First;
+      while NOT dmOnePot.tblRecipe.eof do
+      begin
+        // Loop through the Recipe to find ingredients needed
+        if dmOnePot.tblRecipe['MenuID'] = iMenuID then
+        begin
+
+          dmOnePot.tblStock.First;
+          while NOT dmOnePot.tblStock.eof do
+          begin
+            // Calculate cost based on number of ingredient required
+            if dmOnePot.tblStock['IngID'] = dmOnePot.tblRecipe['IngID'] then
+            begin
+              rCost := rCost + (dmOnePot.tblStock['Cost'] * dmOnePot.tblRecipe
+                  ['rcpQuantity']);
+            end;
+
+            dmOnePot.tblStock.next;
+          end; // END While Stock
+        end;
+
+        dmOnePot.tblRecipe.next;
+      end; // END While Recipe
+      break;
+    end; // END If Menu
+
+    dmOnePot.tblMenu.next;
+  end; // END While Menu
+
+  result := rCost + (rCost * 2.5); // Apply markup to cost of ingredients
+
+end;
+
 procedure TfrmDevKit.ListUserBookings;
 begin
   // Add User Bookings to lbxBookings
   frmMain.lbxBookings.clear;
-  dmOnePot.tblReservations.first;
-  while NOT dmOnePot.tblReservations.Eof do
+  dmOnePot.tblReservations.First;
+  while NOT dmOnePot.tblReservations.eof do
   begin
 
     if dmOnePot.tblReservations['cusID'] = frmLogIn.sUID then
       frmMain.lbxBookings.Items.Add(dmOnePot.tblReservations['DateReserved']);
 
-    dmOnePot.tblReservations.Next;
+    dmOnePot.tblReservations.next;
   end;
+end;
+
+procedure TfrmDevKit.LoadMenu;
+begin
+  // Load Menu into List Box
+  frmMain.lbxMenu.clear;
+
+  dmOnePot.tblMenu.First;
+  while NOT dmOnePot.tblMenu.eof do
+  begin
+
+    frmMain.lbxMenu.Items.Add(dmOnePot.tblMenu['Recipe']);
+
+    dmOnePot.tblMenu.next;
+  end;
+
 end;
 
 function TfrmDevKit.MostBought: string;
@@ -190,10 +259,10 @@ var
   iHighest: integer;
 begin
 
-  dmOnePot.tblMenu.first;
+  dmOnePot.tblMenu.First;
   iHighest := 0;
 
-  while NOT dmOnePot.tblMenu.Eof do
+  while NOT dmOnePot.tblMenu.eof do
   begin
 
     if dmOnePot.tblMenu['TimesSold'] > iHighest then
@@ -202,7 +271,7 @@ begin
       iHighest := dmOnePot.tblMenu['TimesSold'];
     end;
 
-    dmOnePot.tblMenu.Next;
+    dmOnePot.tblMenu.next;
   end;
 
   result := sHighest;
@@ -218,23 +287,23 @@ begin
 
   rHighest := 0;
   // Loop through tblMenu to check for each Menu Item
-  dmOnePot.tblMenu.first;
+  dmOnePot.tblMenu.First;
 
-  while NOT dmOnePot.tblMenu.Eof do
+  while NOT dmOnePot.tblMenu.eof do
   begin
     iMenu := dmOnePot.tblMenu['MenuID'];
     iSold := dmOnePot.tblMenu['TimesSold'];
     rCost := 0;
 
-    dmOnePot.tblRecipe.first;
-    while NOT dmOnePot.tblRecipe.Eof do
+    dmOnePot.tblRecipe.First;
+    while NOT dmOnePot.tblRecipe.eof do
     begin
       // Loop through the Recipe to find ingredients needed
       if dmOnePot.tblRecipe['MenuID'] = iMenu then
       begin
 
-        dmOnePot.tblStock.first;
-        while NOT dmOnePot.tblStock.Eof do
+        dmOnePot.tblStock.First;
+        while NOT dmOnePot.tblStock.eof do
         begin
           // Calculate cost based on number of ingredient required
           if dmOnePot.tblStock['IngID'] = dmOnePot.tblRecipe['IngID'] then
@@ -243,15 +312,15 @@ begin
                 ['rcpQuantity']);
           end;
 
-          dmOnePot.tblStock.Next;
-        end;
+          dmOnePot.tblStock.next;
+        end; // END While Stock
       end;
 
-      dmOnePot.tblRecipe.Next;
-    end;
+      dmOnePot.tblRecipe.next;
+    end; // END While Recipe
 
     // rCost := rCost * iSold;
-    rProfit := (rCost + (rCost * 20 / 100)) * iSold; // Apply 20% markup to cost of ingredients, then times sold
+    rProfit := (rCost + (rCost * 2.5)) * iSold; // Apply markup to cost of ingredients, then times sold
 
     if rHighest < rProfit then
     begin
@@ -259,8 +328,8 @@ begin
       sHighest := dmOnePot.tblMenu['Recipe']
     end;
 
-    dmOnePot.tblMenu.Next;
-  end;
+    dmOnePot.tblMenu.next;
+  end; // END While Menu
 
   result := sHighest;
 
