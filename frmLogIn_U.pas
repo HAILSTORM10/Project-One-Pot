@@ -50,17 +50,12 @@ var
 
 implementation
 
-uses Welcome_U, Dash_U, SignUp_U, P1SDK, dmOnePot_U;
+uses Welcome_U, Dash_U, P1SDK, dmOnePot_U;
 {$R *.dfm}
 
 procedure TfrmLogIn.btnBackClick(Sender: TObject);
 begin
-  // pnlSignUp.Enabled := False;
-  // pnlLogin.Enabled := True;
-  // frmDevKit.PanelSlide(pnlSignUp, 'R', 90);
-
   pnlSignUp.Hide;
-
 end;
 
 procedure TfrmLogIn.btnLoginClick(Sender: TObject);

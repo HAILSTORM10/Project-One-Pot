@@ -3,7 +3,7 @@ unit dmOnePot_U;
 interface
 
 uses
-  SysUtils, Classes, DB, ADODB, comctrls;
+  SysUtils, Classes, DB, ADODB;
 
 type
   TdmOnePot = class(TDataModule)
@@ -36,7 +36,6 @@ implementation
 
 procedure TdmOnePot.DataModuleCreate(Sender: TObject);
 begin
-//conOnePot.Connected := true;
 
 tblCustomers.Active := true;
 tblEmployees.Active := true;

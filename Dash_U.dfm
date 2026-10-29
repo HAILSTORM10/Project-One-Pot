@@ -46938,7 +46938,6 @@ object frmMain: TfrmMain
       Caption = 'tabEmployee'
       ImageIndex = 1
       TabVisible = False
-      ExplicitWidth = 1284
       object imgBackgroundEMP: TImage
         Left = 4
         Top = 10
@@ -149140,10 +149139,6 @@ object frmMain: TfrmMain
           TabOrder = 0
           object tabEdit: TTabSheet
             Caption = 'tabEdit'
-            ExplicitLeft = 36
-            ExplicitTop = 28
-            ExplicitWidth = 321
-            ExplicitHeight = 676
             object Image2: TImage
               Left = 8
               Top = 11
@@ -150062,8 +150057,6 @@ object frmMain: TfrmMain
           object tabAdd: TTabSheet
             Caption = 'tabAdd'
             ImageIndex = 1
-            ExplicitWidth = 321
-            ExplicitHeight = 676
             object Label1: TLabel
               Left = 40
               Top = 197
@@ -150979,7 +150972,7 @@ object frmMain: TfrmMain
       end
       object pnlStats: TPanel
         Left = 377
-        Top = 720
+        Top = -720
         Width = 465
         Height = 720
         Caption = 'pnlStats'
