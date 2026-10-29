@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, jpeg, pngimage, StdCtrls, DB, ADODB;
+  Dialogs, ExtCtrls, jpeg, pngimage, StdCtrls, DB, ADODB, ShellAPI;
 
 type
   TfrmWelcome = class(TForm)
@@ -15,11 +15,13 @@ type
     Label3: TLabel;
     Button1: TButton;
     imgExit: TImage;
+    lblHelp: TLabel;
     procedure imgExitClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblFlavourClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure lblHelpClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -47,7 +49,7 @@ end;
 
 procedure TfrmWelcome.FormCreate(Sender: TObject);
 begin
-//Dynamically create lblFlavour
+  // Dynamically create lblFlavour
   lblFlavour := TLabel.Create(self);
   With lblFlavour do
   begin
@@ -96,6 +98,14 @@ end;
 procedure TfrmWelcome.lblFlavourClick(Sender: TObject);
 begin
   lblFlavour.Caption := arrFlavour[Random(length(arrFlavour))];
+end;
+
+procedure TfrmWelcome.lblHelpClick(Sender: TObject);
+begin
+
+//Open the GitHub ReadMe File
+  ShellExecute(Handle, 'open', PChar('https://github.com/HAILSTORM10/Project-One-Pot/blob/ddf5d21e4c8c4fcc941bbe36d9fa2235931dc6c6/README.md'), nil, nil,
+    SW_SHOWNORMAL);
 end;
 
 end.

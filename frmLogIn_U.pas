@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, pngimage, ExtCtrls, Grids, DBGrids, ADODB, DB, ComCtrls;
+  Dialogs, StdCtrls, pngimage, ExtCtrls, Grids, DBGrids, ADODB, DB, ComCtrls, ShellAPI;
 
 type
   TfrmLogIn = class(TForm)
@@ -29,12 +29,14 @@ type
     dtpDOB: TDateTimePicker;
     Label1: TLabel;
     edtPhoneNumber: TEdit;
+    lblHelp: TLabel;
     procedure btnLRegClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnBackClick(Sender: TObject);
     procedure btnSRegClick(Sender: TObject);
     procedure imgExitClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lblHelpClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -173,6 +175,13 @@ end;
 procedure TfrmLogIn.imgExitClick(Sender: TObject);
 begin
   Application.Terminate;
+end;
+
+procedure TfrmLogIn.lblHelpClick(Sender: TObject);
+begin
+  // Open the GitHub ReadMe File
+  ShellExecute(Handle, 'open', PChar(
+      'https://github.com/HAILSTORM10/Project-One-Pot/blob/ddf5d21e4c8c4fcc941bbe36d9fa2235931dc6c6/README.md'), nil, nil, SW_SHOWNORMAL);
 end;
 
 end.

@@ -144001,8 +144001,8 @@ object frmWelcome: TfrmWelcome
   object Label3: TLabel
     Left = 520
     Top = 192
-    Width = 1280
-    Height = 720
+    Width = 244
+    Height = 64
     Caption = 'Welcome'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
@@ -144839,6 +144839,23 @@ object frmWelcome: TfrmWelcome
       49454E44AE426082}
     Stretch = True
     OnClick = imgExitClick
+  end
+  object lblHelp: TLabel
+    Left = 24
+    Top = 24
+    Width = 27
+    Height = 19
+    Hint = 'I NEEED HEEEEEELPPP!!!'
+    Caption = '???'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlue
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold, fsUnderline]
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    OnClick = lblHelpClick
   end
   object Button1: TButton
     Left = 600

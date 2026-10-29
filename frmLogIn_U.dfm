@@ -144819,6 +144819,23 @@ object frmLogIn: TfrmLogIn
       Stretch = True
       OnClick = imgExitClick
     end
+    object lblHelp: TLabel
+      Left = 24
+      Top = 24
+      Width = 27
+      Height = 19
+      Hint = 'I NEEED HEEEEEELPPP!!!'
+      Caption = '???'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold, fsUnderline]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = lblHelpClick
+    end
     object btnLogin: TButton
       Left = 616
       Top = 472
