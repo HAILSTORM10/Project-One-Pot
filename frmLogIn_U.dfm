@@ -144824,7 +144824,7 @@ object frmLogIn: TfrmLogIn
       Top = 472
       Width = 91
       Height = 25
-      Caption = 'btnLogin'
+      Caption = 'Let'#39's Roll!'
       TabOrder = 2
       OnClick = btnLoginClick
     end

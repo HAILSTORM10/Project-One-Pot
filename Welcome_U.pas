@@ -15,11 +15,11 @@ type
     Label3: TLabel;
     Button1: TButton;
     imgExit: TImage;
-    lblFlavour: TLabel;
     procedure imgExitClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblFlavourClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -29,6 +29,7 @@ type
 var
   frmWelcome: TfrmWelcome;
   arrFlavour: Array of String;
+  lblFlavour: TLabel;
 
 implementation
 
@@ -42,6 +43,24 @@ begin
   frmLogIn.show;
   frmWelcome.Hide;
 
+end;
+
+procedure TfrmWelcome.FormCreate(Sender: TObject);
+begin
+//Dynamically create lblFlavour
+  lblFlavour := TLabel.Create(self);
+  With lblFlavour do
+  begin
+    Parent := self;
+    Left := 580;
+    Top := 624;
+    font.Color := clWhite;
+    font.Size := 10;
+    font.Style := [fsbold];
+    Alignment := taCenter;
+    Width := 288;
+    OnClick := lblFlavourClick;
+  end;
 end;
 
 procedure TfrmWelcome.FormShow(Sender: TObject);

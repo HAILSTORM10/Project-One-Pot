@@ -13,6 +13,7 @@ object frmWelcome: TfrmWelcome
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -143998,10 +143999,10 @@ object frmWelcome: TfrmWelcome
     ParentFont = False
   end
   object Label3: TLabel
-    Left = 528
-    Top = 128
-    Width = 244
-    Height = 64
+    Left = 520
+    Top = 192
+    Width = 1280
+    Height = 720
     Caption = 'Welcome'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
@@ -144838,21 +144839,6 @@ object frmWelcome: TfrmWelcome
       49454E44AE426082}
     Stretch = True
     OnClick = imgExitClick
-  end
-  object lblFlavour: TLabel
-    Left = 504
-    Top = 624
-    Width = 288
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-    OnClick = lblFlavourClick
   end
   object Button1: TButton
     Left = 600

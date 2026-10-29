@@ -114,6 +114,7 @@ type
     Image4: TImage;
     Label13: TLabel;
     Image5: TImage;
+    btnFire: TButton;
     procedure imgExitAdminClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure imgExitEmpClick(Sender: TObject);
@@ -154,6 +155,7 @@ type
     procedure imgBackLoyaltyClick(Sender: TObject);
     procedure Image4Click(Sender: TObject);
     procedure Image5Click(Sender: TObject);
+    procedure btnFireClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -170,10 +172,71 @@ CONST
 
 implementation
 
-uses frmLogIn_U, P1SDK;
+uses frmLogIn_U, P1SDK, Welcome_U;
 {$R *.dfm}
 
+procedure TfrmMain.FormShow(Sender: TObject);
+var
+  tRestData: TextFile;
+  sMoney: string;
+begin
+  // Load Appropriate Page
+  case frmLogIn.sUID[1] of
+    'C':
+      pgcMain.ActivePage := tabCustomer;
+    'E':
+      pgcMain.ActivePage := tabEmployee;
+    'A':
+      pgcMain.ActivePage := tabAdmin;
+  end;
+
+  tblStock := dmOnePot.tblStock;
+  tblMenu := dmOnePot.tblMenu;
+  tblRecipe := dmOnePot.tblRecipe;
+  tblReserve := dmOnePot.tblReservations;
+  tblCusts := dmOnePot.tblCustomers;
+
+  // Load Money
+  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
+
+  if NOT FileExists('DataFiles\ResturantData.txt') then
+  begin
+    Rewrite(tRestData);
+    Writeln(tRestData, '100000');
+    lblMoney.Caption := FloatTOStrF(100000, ffCurrency, 8, 2);
+    CloseFile(tRestData);
+    exit;
+  end
+  else
+    Reset(tRestData);
+
+  Readln(tRestData, sMoney);
+  lblMoney.Caption := FloatTOStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
+  CloseFile(tRestData);
+  // End Money
+
+  // Clear Past Reservations
+  tblReserve.first;
+  while NOT tblReserve.Eof do
+  begin
+    if tblReserve['Reserved'] then
+      if tblReserve['DateReserved'] < Date then
+      begin
+        tblReserve.edit;
+        tblReserve['cusID'] := '';
+        tblReserve['Reserved'] := False;
+        tblReserve['DateReserved'] := null;
+        tblReserve['specRequests'] := '';
+        tblReserve.Post;
+      end;
+
+    tblReserve.Next;
+  end;
+
+end;
+
 // Admin Code
+
 procedure TfrmMain.btnAddIngredientClick(Sender: TObject);
 var
   sInput: string;
@@ -237,14 +300,23 @@ var
   sName: string;
 begin
 
-  sName := frmLogIn.tblCustomers['cusName'];
+  sName := frmLogIn.tblCustomers['cusName'] + frmLogIn.tblCustomers
+    ['cusSurname'];
 
   if MessageDlg('Ban ' + sName + ' from resturant?', mtWarning, mbYesNo, 0)
     = mrYes then
   begin
     frmLogIn.tblCustomers.Delete;
-    Showmessage('Banned ' + sName + ' from resturant.');
+
+  end
+  else
+  begin
+    Showmessage('Operation Cancelled');
+    exit;
   end;
+
+  frmDevKit.DeleteUser(sName);
+  Showmessage('Banned ' + sName + ' from resturant.');
 end;
 
 procedure TfrmMain.btnDecStockClick(Sender: TObject);
@@ -252,25 +324,6 @@ begin
   tblStock.edit;
   tblStock['Quantity'] := tblStock['Quantity'] - 1;
   tblStock.Post;
-end;
-
-procedure TfrmMain.btnDeleteReservationClick(Sender: TObject);
-begin
-
-  if MessageDlg('Delete The Selected Reservation?', mtWarning, mbYesNo, 0)
-    = mrYes then
-  begin
-	tblReserve.edit;
-    tblReserve['CusID'] := null;
-    tblReserve['Reserved'] := False;
-    tblReserve['DateReserved'] := null;
-    tblReserve['SpecRequests'] := null;
-	tblReserve.post;
-    Showmessage('Successfully Deleted the Reservation!');
-
-  end
-  else
-    Showmessage('Deletion Cancelled');
 end;
 
 procedure TfrmMain.btnDelStockClick(Sender: TObject);
@@ -299,6 +352,48 @@ begin
   tblMenu.Post;
 end;
 
+procedure TfrmMain.btnFireClick(Sender: TObject);
+var
+  sMessage, sUser: string;
+  bCurrent: boolean;
+begin
+
+  sUser := dmOnePot.tblEmployees['empName'] + ' ' + dmOnePot.tblEmployees
+    ['empSurname'];
+
+  // Check if current user is under fire
+  bCurrent := False;
+  if dmOnePot.tblEmployees['empID'] = frmLogIn.sUID then
+  begin
+    sMessage := 'Would you like to quit?';
+    bCurrent := true;
+  end
+  else
+    sMessage := 'Fire ' + sUser + '?';
+
+  if MessageDlg(sMessage, mtWarning, mbYesNo, 0) = mrYes then
+  begin
+    dmOnePot.tblEmployees.Delete;
+  end
+  else
+  begin
+    Showmessage('Operation Cancelled!');
+    exit;
+  end;
+
+  // Log Current user out if Quit
+  if bCurrent then
+  begin
+    pnlAccounts.Top := -720;
+    frmMain.Hide;
+    frmWelcome.show;
+  end;
+
+  // Removes user from login text file
+  frmDevKit.DeleteUser(sUser);
+  Showmessage('Sucessfully removed ' + sUser);
+end;
+
 procedure TfrmMain.btnIncStockClick(Sender: TObject);
 begin
   tblStock.edit;
@@ -310,11 +405,45 @@ end;
 procedure TfrmMain.btnMenuAddClick(Sender: TObject);
 var
   i, iMenuID, iIngID, iQuantity: integer;
+  bContinue: boolean;
 begin
+
+  // Vet Name
+  if Length(edtRecipe.Text) > 25 then
+  begin
+    Showmessage('Recipe name should be 25 Characters or less');
+    edtRecipe.SetFocus;
+    exit;
+  end;
+  if edtRecipe.Text = '' then
+  begin
+    Showmessage('Recipe name cannot be blank');
+    edtRecipe.SetFocus;
+    exit;
+  end;
+
+  // Vet preptime
+  if sedPrepTime.Value <= 0 then
+  begin
+    Showmessage('Prep time should be greater than 0');
+    exit;
+  end;
+
+  // Ensure atleast one ingredient checked
+  bContinue := False;
+  for i := 1 to clbMenuAdd.Count - 1 do
+    if clbMenuAdd.Checked[i] then
+      bContinue := true;
+  if NOT bContinue then
+  begin
+    Showmessage('Select at least 1 ingredient');
+    exit;
+  end;
+
   // Add Basic item Details
   tblMenu.Append;
 
-  tblMenu['Recipe'] := edtRecipe.text;
+  tblMenu['Recipe'] := edtRecipe.Text;
   tblMenu['PrepTime'] := sedPrepTime.Value;
   tblMenu['TimesSold'] := 0;
 
@@ -338,7 +467,7 @@ begin
         begin
           iIngID := tblStock['IngID'];
           iQuantity := StrToInt
-            (Inputbox('Adding ' + edtRecipe.text + ' to menu',
+            (Inputbox('Adding ' + edtRecipe.Text + ' to menu',
               'How many portions of ' + tblStock['Ingredient'] + '?', '1'));
 
           tblRecipe.Append;
@@ -357,32 +486,33 @@ begin
 
   end; // END For
 
-  Showmessage('Added ' + edtRecipe.text + '!');
+  Showmessage('Added ' + edtRecipe.Text + '!');
 
 end;
 
 procedure TfrmMain.btnRegisterClick(Sender: TObject);
 begin
 
-  frmDevKit.CreateUser(edtName.text, edtSurname.text, edtPass.text,
-    edtPhoneNumber.text, dtpDOB.Date, rgpRole.Items[rgpRole.ItemIndex][1]);
+  frmDevKit.CreateUser(edtName.Text, edtSurname.Text, edtPass.Text,
+    edtPhoneNumber.Text, dtpDOB.Date, rgpRole.Items[rgpRole.ItemIndex][1]);
 
   // Add new user to DB
   frmLogIn.tblEmployees.Append;
   frmLogIn.tblEmployees['empID'] := frmLogIn.sUID;
-  frmLogIn.tblEmployees['empName'] := edtName.text;
-  frmLogIn.tblEmployees['empSurname'] := edtSurname.text;
-  frmLogIn.tblEmployees['empPhoneNumber'] := edtPhoneNumber.text;
+  frmLogIn.tblEmployees['empName'] := edtName.Text;
+  frmLogIn.tblEmployees['empSurname'] := edtSurname.Text;
+  frmLogIn.tblEmployees['empPhoneNumber'] := edtPhoneNumber.Text;
   frmLogIn.tblEmployees['empDOB'] := dtpDOB.Date;
 
-  if cbxPosition.ItemIndex <> -1 then
+  // Assign Role and Wage
+  if cbxPosition.ItemIndex = -1 then
   begin
     frmLogIn.tblEmployees['empPosition'] := 'Manager';
     frmLogIn.tblEmployees['empWage'] := 900;
   end
   else
   begin
-    frmLogIn.tblEmployees['empPosition'] := cbxPosition.text;
+    frmLogIn.tblEmployees['empPosition'] := cbxPosition.Text;
     frmLogIn.tblEmployees['empWage'] := arrWages[cbxPosition.ItemIndex];
   end;
 
@@ -397,7 +527,6 @@ var
   tRestData: TextFile;
   rCost: Real;
 begin
-  // Remember to charge for it
   tblStock.first;
   rCost := 0;
 
@@ -441,66 +570,6 @@ begin
 
 end;
 
-procedure TfrmMain.FormShow(Sender: TObject);
-var
-  tRestData: TextFile;
-  sMoney: string;
-begin
-  // Load Appropriate Page
-  case frmLogIn.sUID[1] of
-    'C':
-      pgcMain.ActivePage := tabCustomer;
-    'E':
-      pgcMain.ActivePage := tabEmployee;
-    'A':
-      pgcMain.ActivePage := tabAdmin;
-  end;
-
-  tblStock := dmOnePot.tblStock;
-  tblMenu := dmOnePot.tblMenu;
-  tblRecipe := dmOnePot.tblRecipe;
-  tblReserve := dmOnePot.tblReservations;
-  tblCusts := dmOnePot.tblCustomers;
-
-  // Load Money
-  AssignFile(tRestData, 'DataFiles\ResturantData.txt');
-
-  if NOT FileExists('DataFiles\ResturantData.txt') then
-  begin
-    Rewrite(tRestData);
-    Writeln(tRestData, '100000');
-    lblMoney.Caption := FloatTOStrF(100000, ffCurrency, 8, 2);
-    CloseFile(tRestData);
-    exit;
-  end
-  else
-    Reset(tRestData);
-
-  Readln(tRestData, sMoney);
-  lblMoney.Caption := FloatTOStrF(StrToFloat(sMoney), ffCurrency, 8, 2);
-  CloseFile(tRestData);
-  // End Money
-
-  // Clear Past Reservations
-  tblReserve.first;
-  while NOT tblReserve.Eof do
-  begin
-    if tblReserve['Reserved'] then
-      if tblReserve['DateReserved'] < Date then
-      begin
-        tblReserve.edit;
-        tblReserve['cusID'] := '';
-        tblReserve['Reserved'] := False;
-        tblReserve['DateReserved'] := null;
-        tblReserve['specRequests'] := '';
-        tblReserve.Post;
-      end;
-
-    tblReserve.Next;
-  end;
-
-end;
-
 procedure TfrmMain.Image1Click(Sender: TObject);
 begin
   pnlAccounts.Top := -720;
@@ -518,7 +587,6 @@ end;
 
 procedure TfrmMain.imgAccountsClick(Sender: TObject);
 begin
-  // pnlAccounts.Top := 0;
 
   frmDevKit.PanelSlide(pnlAccounts, 'D');
 
@@ -538,6 +606,7 @@ procedure TfrmMain.imgInventoryClick(Sender: TObject);
 var
   dtItem, dtExpire: TDateTime;
 begin
+  pnlInventory.show;
   frmDevKit.PanelSlide(pnlInventory, 'D');
 
   // Determine Stock
@@ -562,7 +631,7 @@ end;
 procedure TfrmMain.imgLogOutClick(Sender: TObject);
 begin
   // Clear User Details and return to log in
-  frmLogIn.Show;
+  frmLogIn.show;
   frmMain.Hide;
   frmLogIn.bLoggedIn := False;
 
@@ -578,7 +647,6 @@ end;
 procedure TfrmMain.imgMenuClick(Sender: TObject);
 begin
 
-  // pnlMenu.Top := 0;
   frmDevKit.PanelSlide(pnlMenu, 'D');
   // Add ingredients to List Box on "Add" Tab
 
@@ -605,7 +673,7 @@ begin
   // Only display position box if not manager
   if rgpRole.ItemIndex = 1 then
   begin
-    cbxPosition.Show;
+    cbxPosition.show;
   end
   else
   begin
@@ -626,6 +694,8 @@ begin
     1:
       redStats.Lines.Add(frmDevKit.MostProfit + ' is the most profitable item');
 
+    2:
+      redStats.Lines.Add(frmDevKit.MostLoyal + ' is the most loyal customer')
   end;
 
 end;
@@ -647,7 +717,7 @@ end;
 procedure TfrmMain.edtRequestChange(Sender: TObject);
 begin
   lblRequest.Caption := 'Characters remaining: ' + IntToStr
-    (40 - Length(edtRequest.text))
+    (40 - Length(edtRequest.Text))
 end;
 
 procedure TfrmMain.btnMakeBookingClick(Sender: TObject);
@@ -661,9 +731,15 @@ begin
   bSuccess := False;
 
   // Vet SpecRequest to add to DB
-  if Length(edtRequest.text) > 40 then
+  if Length(edtRequest.Text) > 40 then
   begin
     Showmessage('Please limit your request to 40 characters or less');
+    exit;
+  end;
+  // Vet party size
+  if spnPeople.Value < 0 then
+  begin
+    Showmessage('Party size must be greater than 0');
     exit;
   end;
 
@@ -676,11 +752,11 @@ begin
       begin
         tblReserve.edit;
         tblReserve['CusID'] := frmLogIn.sUID;
-        tblReserve['Reserved'] := True;
+        tblReserve['Reserved'] := true;
         tblReserve['DateReserved'] := Dateof(dtpMakeBooking.Date);
-        tblReserve['SpecRequests'] := edtRequest.text;
+        tblReserve['SpecRequests'] := edtRequest.Text;
         tblReserve.Post;
-        bSuccess := True;
+        bSuccess := true;
         break;
       end
       else
@@ -709,7 +785,7 @@ begin
 
   // clear details
   spnPeople.Value := 0;
-  edtRequest.text := '';
+  edtRequest.Text := '';
   lblRequest.Hide;
 
   // Increase number of total bookings made by user
@@ -733,7 +809,7 @@ end;
 
 procedure TfrmMain.imgBookingsClick(Sender: TObject);
 begin
-  // pnlBookingsCus.Left := 0;
+
   frmDevKit.PanelSlide(pnlBookingsCus, 'D');
   frmDevKit.ListUserBookings;
 
@@ -776,11 +852,11 @@ var
   dtJoinDate, dtBirthday: TDateTime;
   iReservations: integer;
 begin
-  // pnlLoyalty.Left := 632;
+
   frmDevKit.PanelSlide(pnlLoyalty, 'D');
   lblName.Caption := frmLogIn.sUser;
 
-  // Loop tabl for customer details
+  // Loop table for customer details
   tblCusts.first;
   while NOT tblCusts.Eof do
   begin
@@ -833,7 +909,6 @@ end;
 procedure TfrmMain.imgMenuEmpClick(Sender: TObject);
 begin
 
-  // pnlMenuEMP.Top := 0;
   frmDevKit.PanelSlide(pnlMenuEMP, 'D');
   frmDevKit.LoadMenu;
   frmMain.edtSearch.Clear;
@@ -853,15 +928,16 @@ end;
 procedure TfrmMain.edtSearchChange(Sender: TObject);
 begin
 
-  if NOT(edtSearch.text = '') then
+  // Reload Menu if Search is blank
+  if NOT(edtSearch.Text = '') then
   begin
     lbxMenu.Clear;
 
     tblMenu.first;
     while NOT tblMenu.Eof do
     begin
-
-      if POS(UpperCase(edtSearch.text), UpperCase(tblMenu['Recipe'])) > 0 then
+      // If sSearch is found in Recipe, display it
+      if POS(UpperCase(edtSearch.Text), UpperCase(tblMenu['Recipe'])) > 0 then
         lbxMenu.Items.Add(tblMenu['Recipe']);
 
       tblMenu.Next;
@@ -869,7 +945,7 @@ begin
 
   end; // END If
 
-  if edtSearch.text = '' then
+  if edtSearch.Text = '' then
   begin
     frmDevKit.LoadMenu;
   end;
@@ -920,7 +996,7 @@ procedure TfrmMain.btnAddtoCartClick(Sender: TObject);
 var
   sItem: string;
 begin
-
+  // Add selected item to array and receipt
   sItem := lbxMenu.Items[lbxMenu.ItemIndex];
   SetLength(arrCart, Length(arrCart) + 1);
   arrCart[Length(arrCart) - 1] := sItem;
@@ -961,7 +1037,8 @@ begin
 
       if NOT(tblReserve['SpecRequests'] = null) then
         Add('Special Request:' + #9 + tblReserve['SpecRequests']);
-    end // END If Reserved
+    end
+    // END If Reserved
     else
       Add('Table has no booking!');
 
@@ -970,7 +1047,7 @@ end;
 
 procedure TfrmMain.imgTablesClick(Sender: TObject);
 begin
-  // pnlTables.Top := 0;
+
   frmDevKit.PanelSlide(pnlTables, 'D');
 
   // Set up redTables
@@ -992,6 +1069,25 @@ end;
 procedure TfrmMain.Image5Click(Sender: TObject);
 begin
   pnlMenuEMP.Top := -720;
+end;
+
+procedure TfrmMain.btnDeleteReservationClick(Sender: TObject);
+begin
+
+  if MessageDlg('Delete The Selected Reservation?', mtWarning, mbYesNo, 0)
+    = mrYes then
+  begin
+    tblReserve.edit;
+    tblReserve['CusID'] := null;
+    tblReserve['Reserved'] := False;
+    tblReserve['DateReserved'] := null;
+    tblReserve['SpecRequests'] := null;
+    tblReserve.Post;
+    Showmessage('Successfully Deleted the Reservation!');
+
+  end
+  else
+    Showmessage('Deletion Cancelled');
 end;
 
 // END Employee Code

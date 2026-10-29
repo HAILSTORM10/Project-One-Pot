@@ -3,7 +3,7 @@ unit dmOnePot_U;
 interface
 
 uses
-  SysUtils, Classes, DB, ADODB;
+  SysUtils, Classes, DB, ADODB, comctrls;
 
 type
   TdmOnePot = class(TDataModule)

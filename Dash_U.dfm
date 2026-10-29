@@ -28,9 +28,9 @@ object frmMain: TfrmMain
       TabVisible = False
       object imgBackgroundCus: TImage
         Left = 4
-        Top = 26
-        Width = 1273
-        Height = 716
+        Top = 10
+        Width = 1280
+        Height = 732
         Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000005000000
           02D00806000000CF7DDD56000000097048597300000B1300000B1301009A9C18
@@ -45044,7 +45044,7 @@ object frmMain: TfrmMain
         Left = 4
         Top = -720
         Width = 637
-        Height = 707
+        Height = 726
         Color = clCream
         ParentBackground = False
         TabOrder = 0
@@ -46046,7 +46046,7 @@ object frmMain: TfrmMain
         Left = 632
         Top = -720
         Width = 645
-        Height = 700
+        Height = 720
         Color = clCream
         ParentBackground = False
         TabOrder = 1
@@ -46938,11 +46938,12 @@ object frmMain: TfrmMain
       Caption = 'tabEmployee'
       ImageIndex = 1
       TabVisible = False
+      ExplicitWidth = 1284
       object imgBackgroundEMP: TImage
         Left = 4
         Top = 10
         Width = 1276
-        Height = 716
+        Height = 720
         Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000005000000
           02D00806000000CF7DDD56000000097048597300000B1300000B1301009A9C18
@@ -91750,7 +91751,7 @@ object frmMain: TfrmMain
         Left = 4
         Top = -720
         Width = 565
-        Height = 716
+        Height = 726
         Color = clCream
         ParentBackground = False
         TabOrder = 0
@@ -92675,7 +92676,7 @@ object frmMain: TfrmMain
         Left = 736
         Top = -720
         Width = 544
-        Height = 716
+        Height = 720
         Caption = 'pnlTables'
         Color = clCream
         ParentBackground = False
@@ -93627,10 +93628,10 @@ object frmMain: TfrmMain
       ImageIndex = 2
       TabVisible = False
       object imgAdminBG: TImage
-        Left = 4
-        Top = 15
+        Left = 0
+        Top = 6
         Width = 1280
-        Height = 715
+        Height = 724
         Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000005000000
           02D00806000000CF7DDD56000000097048597300000EC400000EC401952B0E1B
@@ -148053,7 +148054,7 @@ object frmMain: TfrmMain
         Left = 377
         Top = -720
         Width = 465
-        Height = 711
+        Height = 720
         Color = clCream
         ParentBackground = False
         TabOrder = 1
@@ -149112,23 +149113,37 @@ object frmMain: TfrmMain
             'Waiter'
             'Garbage Boy')
         end
+        object btnFire: TButton
+          Left = 366
+          Top = 360
+          Width = 83
+          Height = 25
+          Caption = 'Fire Employee'
+          TabOrder = 11
+          OnClick = btnFireClick
+        end
       end
       object pnlMenu: TPanel
-        Left = 864
+        Left = 832
         Top = -720
-        Width = 329
-        Height = 708
+        Width = 361
+        Height = 730
+        Color = clCream
+        ParentBackground = False
         TabOrder = 2
         object pgcMenu: TPageControl
           Left = 0
           Top = 9
-          Width = 329
-          Height = 704
-          ActivePage = tabEdit
+          Width = 361
+          Height = 721
+          ActivePage = tabAdd
           TabOrder = 0
           object tabEdit: TTabSheet
             Caption = 'tabEdit'
-            ExplicitTop = 23
+            ExplicitLeft = 36
+            ExplicitTop = 28
+            ExplicitWidth = 321
+            ExplicitHeight = 676
             object Image2: TImage
               Left = 8
               Top = 11
@@ -149984,7 +149999,7 @@ object frmMain: TfrmMain
               OnClick = imgMenuBackClick
             end
             object Label11: TLabel
-              Left = 42
+              Left = 50
               Top = 122
               Width = 236
               Height = 64
@@ -149998,7 +150013,7 @@ object frmMain: TfrmMain
               ParentFont = False
             end
             object dbgMenu: TDBGrid
-              Left = -2
+              Left = 14
               Top = 207
               Width = 320
               Height = 210
@@ -150035,7 +150050,7 @@ object frmMain: TfrmMain
                 end>
             end
             object btnEditName: TButton
-              Left = 104
+              Left = 120
               Top = 471
               Width = 75
               Height = 25
@@ -150047,6 +150062,8 @@ object frmMain: TfrmMain
           object tabAdd: TTabSheet
             Caption = 'tabAdd'
             ImageIndex = 1
+            ExplicitWidth = 321
+            ExplicitHeight = 676
             object Label1: TLabel
               Left = 40
               Top = 197
@@ -150962,9 +150979,9 @@ object frmMain: TfrmMain
       end
       object pnlStats: TPanel
         Left = 377
-        Top = -720
+        Top = 720
         Width = 465
-        Height = 711
+        Height = 720
         Caption = 'pnlStats'
         Color = clCream
         ParentBackground = False
@@ -151855,8 +151872,7 @@ object frmMain: TfrmMain
           Items.Strings = (
             'Most Bought Item'
             'Most Profit from Item'
-            'Most Loyal Customer'
-            'Monthly Profit')
+            'Most Loyal Customer')
         end
         object redStats: TRichEdit
           Left = 64

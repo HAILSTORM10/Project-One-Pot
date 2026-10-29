@@ -4,10 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, DateUtils, Math;
+  Dialogs, ExtCtrls, DateUtils, Math, StdCtrls, ComCtrls;
 
 type
   TfrmDevKit = class(TForm)
+
   private
     { Private declarations }
   public
@@ -15,6 +16,7 @@ type
 
     function MostProfit: string;
     function MostBought: string;
+    function MostLoyal: string;
     function ItemPrice(sItem: string): real;
     procedure PanelSlide(Panel: TPanel; cDirection: Char);
     procedure CreateUser(sName, sSurname, sPass, sPhone: String;
@@ -22,12 +24,14 @@ type
     procedure DecreaseStock(sItem: string);
     procedure ListUserBookings;
     procedure LoadMenu;
+    procedure DeleteUser(sName: string);
 
   end;
 
 var
   frmDevKit: TfrmDevKit;
   sNewUID: string;
+  memDelete: TMemo;
 
 implementation
 
@@ -219,6 +223,31 @@ begin
 
 end;
 
+procedure TfrmDevKit.DeleteUser(sName: string);
+var
+  tFile: TextFile;
+  sLine: string;
+begin
+
+  memDelete := TMemo.Create(Self);
+  memDelete.Parent := Self;
+  memDelete.Lines.Clear;
+
+  AssignFile(tFile, 'DataFiles\Userdata.txt');
+  Reset(tFile);
+
+  while NOT eof(tFile) do
+  begin
+    readLN(tFile, sLine);
+    if NOT(Copy(sLine, 1, Pos('~#', sLine) - 1) = sName) then
+      memDelete.Lines.Add(sLine);
+  end;
+
+  CloseFile(tFile);
+  memDelete.Lines.SaveToFile('DataFiles\UserData.txt');
+  memDelete.Free;
+end;
+
 function TfrmDevKit.ItemPrice(sItem: string): real;
 var
   iMenuID: integer;
@@ -267,14 +296,14 @@ begin
   end; // END While Menu
 
   rCost := rCost + (rCost * 2.5); // Apply markup to cost of ingredients
-  result := rCost + (rCost * 15/100) //Apply VAT
+  result := rCost + (rCost * 15 / 100) // Apply VAT
 
 end;
 
 procedure TfrmDevKit.ListUserBookings;
 begin
   // Add User Bookings to lbxBookings
-  frmMain.lbxBookings.clear;
+  frmMain.lbxBookings.Clear;
   dmOnePot.tblReservations.First;
   while NOT dmOnePot.tblReservations.eof do
   begin
@@ -289,7 +318,7 @@ end;
 procedure TfrmDevKit.LoadMenu;
 begin
   // Load Menu into List Box
-  frmMain.lbxMenu.clear;
+  frmMain.lbxMenu.Clear;
 
   dmOnePot.tblMenu.First;
   while NOT dmOnePot.tblMenu.eof do
@@ -324,6 +353,31 @@ begin
   end;
 
   result := sHighest;
+
+end;
+
+function TfrmDevKit.MostLoyal: string;
+var
+  iHighest: integer;
+  sName: string;
+begin
+
+  iHighest := 0;
+  dmOnePot.tblCustomers.First;
+  while NOT dmOnePot.tblCustomers.eof do
+  begin
+
+    if dmOnePot.tblCustomers['cusTotalReservations'] > iHighest then
+    begin
+      iHighest := dmOnePot.tblCustomers['cusTotalReservations'];
+      sName := dmOnePot.tblCustomers['cusName'] + ' ' + dmOnePot.tblCustomers
+        ['cusSurname'];
+    end;
+
+    dmOnePot.tblCustomers.next;
+  end;
+
+  result := sName;
 
 end;
 
